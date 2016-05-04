@@ -6,7 +6,12 @@ import curses
 class CursedWindow(object):
 
     OVERRIDE_FUNCS = (
-        'addch', 'delch', 'addnstr', 'addstr',
+        'addch',
+    )
+    WINDOW_SWAP_FUNCS = (
+        'delch', 'addnstr', 'addstr',
+    )
+    SCREEN_SWAP_FUNCS = (
     )
     WINDOW_FUNCS = (
         'refresh', 'clear',
@@ -24,6 +29,11 @@ class CursedWindow(object):
         self.x = x
         self.y = y
 
+    def addch(self, x, y, c, *args):
+        if isinstance(c, int):
+            c = chr(c)
+        return self.window.addch(y, x, c, *args)
+
     def run(self, window):
         self.window = window.subwin(self.height, self.width, self.y, self.x)
         for attr in self.OVERRIDE_FUNCS:
@@ -32,6 +42,18 @@ class CursedWindow(object):
             setattr(self.cls, attr, getattr(self.window, attr))
         for attr in self.SCREEN_FUNCS:
             setattr(self.cls, attr, getattr(self.app.scr, attr))
+        for attr in self.WINDOW_SWAP_FUNCS:
+            window_func = getattr(self.window, attr)
+
+            def new_func(s, x, y, *args, **kwargs):
+                return window_func(y, x, *args, **kwargs)
+            setattr(self.cls, attr, new_func)
+        for attr in self.SCREEN_SWAP_FUNCS:
+            scr_func = getattr(self.app.scr, attr)
+
+            def new_func(s, x, y, *args, **kwargs):
+                return scr_func(y, x, *args, **kwargs)
+            setattr(self.cls, attr, new_func)
 
     def addch(self, x, y, c, *args):
         return self.window.addch(y, x, c, *args)

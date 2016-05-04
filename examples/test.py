@@ -4,7 +4,7 @@ from cursed import CursedApp
 app = CursedApp()
 
 
-@app.window
+@app.window(width=60)
 class MainWindow(object):
 
     def run(self):
@@ -16,15 +16,28 @@ class MainWindow(object):
         for i in range(10):
             self.addch(i, 0, self.c)
         self.refresh()
-        self.clear()
         return True
+
+
+@app.window(width=20, x=60)
+class SideWindow(object):
+
+    def run(self):
+        self.addstr(0, 0, 'foo')
+        self.addstr(0, 1, 'bar')
+        self.refresh()
+        self.c = self.getch()
+        return self.c not in (ord('q'), ord('Q'))
 
 
 def loop():
     window = MainWindow()
+    side = SideWindow()
     while window.run():
         pass
-
+    while side.run():
+        pass
+    window.clear()
 
 result = app.run(loop)
 print(result)
