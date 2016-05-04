@@ -11,7 +11,7 @@ class MainWindow(object):
         self.c = self.getkey()
         self.addstr(self.c * 10, x=1, y=1)
         self.cx = 1
-        self.cy = self.cy + 1
+        self.cy += 1
         self.hline(n=10)
         self.refresh()
         return self.c
