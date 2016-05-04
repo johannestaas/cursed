@@ -16,6 +16,7 @@ class MainWindow(object):
         for i in range(10):
             self.addch(i, 0, self.c)
         self.refresh()
+        self.clear()
         return True
 
 

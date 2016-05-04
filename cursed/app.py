@@ -5,6 +5,16 @@ import curses
 
 class CursedWindow(object):
 
+    OVERRIDE_FUNCS = (
+        'addch', 'delch', 'addnstr', 'addstr',
+    )
+    WINDOW_FUNCS = (
+        'refresh', 'clear',
+    )
+    SCREEN_FUNCS = (
+        'getch',
+    )
+
     def __init__(self, app, cls, width=80, height=24, x=0, y=0):
         self.app = app
         self.cls = cls
@@ -13,23 +23,27 @@ class CursedWindow(object):
         self.height = height
         self.x = x
         self.y = y
-        self.fix_class()
 
     def run(self, window):
         self.window = window.subwin(self.height, self.width, self.y, self.x)
-
-    def addch(self, x, y, c):
-        return self.window.addch(y, x, c)
-
-    def getch(self):
-        return self.app.getch()
-
-    def refresh(self):
-        self.window.refresh()
-
-    def fix_class(self):
-        for attr in ('addch', 'getch', 'refresh'):
+        for attr in self.OVERRIDE_FUNCS:
             setattr(self.cls, attr, getattr(self, attr))
+        for attr in self.WINDOW_FUNCS:
+            setattr(self.cls, attr, getattr(self.window, attr))
+        for attr in self.SCREEN_FUNCS:
+            setattr(self.cls, attr, getattr(self.app.scr, attr))
+
+    def addch(self, x, y, c, *args):
+        return self.window.addch(y, x, c, *args)
+
+    def delch(self, x, y):
+        return self.window.delch(y, x)
+
+    def addnstr(self, x, y, *args):
+        return self.window.addnstr(y, x, *args)
+
+    def addstr(self, x, y, *args):
+        return self.window.addstr(y, x, *args)
 
 
 class Result(object):
@@ -63,7 +77,7 @@ class Result(object):
         if self.interrupted():
             return 'Result(KeyboardInterrupt)'
         return 'Result(%s, message=%s)' % (self.exc_type.__name__,
-                                                str(self.exc))
+                                           str(self.exc))
 
 
 class CursedApp(object):
@@ -81,9 +95,6 @@ class CursedApp(object):
             return decorator(args[0])
         else:
             return decorator
-
-    def getch(self):
-        return self.scr.getch()
 
     def run_windows(self):
         for cls, cw in self.windows.items():
