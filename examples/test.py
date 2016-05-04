@@ -25,6 +25,8 @@ class SideWindow(object):
     def run(self):
         self.addstr(0, 0, 'foo')
         self.addstr(0, 1, 'bar')
+        w, h = self.get_wh()
+        self.addstr(0, 2, str(w))
         self.refresh()
         self.c = self.getch()
         return self.c not in (ord('q'), ord('Q'))
