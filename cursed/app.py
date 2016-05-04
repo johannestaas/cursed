@@ -44,6 +44,20 @@ class CursedWindow(object):
             return self.window.getstr(args[1], args[0])
         return self.window.getstr()
 
+    def swap_window_func(self, attr):
+        func = getattr(self.window, attr)
+
+        def new_func(s, x, y, *args, **kwargs):
+            return func(y, x, *args, **kwargs)
+        setattr(self.cls, attr, new_func)
+
+    def swap_screen_func(self, attr):
+        func = getattr(self.app.scr, attr)
+
+        def new_func(s, x, y, *args, **kwargs):
+            return func(y, x, *args, **kwargs)
+        setattr(self.cls, attr, new_func)
+
     def run(self, window):
         self.window = window.subwin(self.height, self.width, self.y, self.x)
         for attr in self.OVERRIDE_FUNCS:
@@ -53,22 +67,9 @@ class CursedWindow(object):
         for attr in self.SCREEN_FUNCS:
             setattr(self.cls, attr, getattr(self.app.scr, attr))
         for attr in self.WINDOW_SWAP_FUNCS:
-
-            def closure():
-                func = getattr(self.window, attr)
-
-                def new_func(s, x, y, *args, **kwargs):
-                    return func(y, x, *args, **kwargs)
-                setattr(self.cls, attr, new_func)
-            closure()
+            self.swap_window_func(attr)
         for attr in self.SCREEN_SWAP_FUNCS:
-            def closure():
-                func = getattr(self.app.scr, attr)
-
-                def new_func(s, x, y, *args, **kwargs):
-                    return func(y, x, *args, **kwargs)
-                setattr(self.cls, attr, new_func)
-            closure()
+            self.swap_screen_func(attr)
 
 
 class Result(object):
