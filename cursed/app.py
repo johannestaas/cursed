@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys
-import traceback
 import curses
 
 
@@ -36,29 +35,35 @@ class CursedWindow(object):
 class Result(object):
 
     def __init__(self):
-        self.interrupt = False
-        self.tb = None
-        self.exception = None
+        self.exc_type, self.exc, self.tb = None, None, None
 
-    def unwrap(self, reraise=True):
-        self.print_tb()
-        if self.exception and reraise:
-            raise self.exception
+    def _extract_exception(self):
+        self.exc_type, self.exc, self.tb = sys.exc_info()
+
+    def unwrap(self):
+        if self.exc:
+            raise self.exc_type, self.exc, self.tb
 
     def ok(self):
-        return not any(self.tb, self.exception, self.interrupt)
+        return not bool(self.exc)
 
     def err(self):
-        if self.ok():
-            return None
-        if self.exception:
-            return self.exception
-        if self.interrupt:
-            return KeyboardInterrupt
+        return self.exc if self.exc else None
 
-    def print_tb(self):
+    def interrupted(self):
+        return self.exc_type is KeyboardInterrupt
+
+    def print_exc(self):
         if self.tb:
             sys.stderr.write(self.tb)
+
+    def __repr__(self):
+        if self.exc_type is None:
+            return 'Result(OKAY)'
+        if self.interrupted():
+            return 'Result(KeyboardInterrupt)'
+        return 'Result(%s, message=%s)' % (self.exc_type.__name__,
+                                                str(self.exc))
 
 
 class CursedApp(object):
@@ -95,10 +100,9 @@ class CursedApp(object):
             self.run_windows()
             loop_func(*args, **kwargs)
         except KeyboardInterrupt:
-            result.interrupt = True
-        except Exception as e:
-            result.tb = traceback.format_exc()
-            result.exception = e
+            result._extract_exception()
+        except Exception:
+            result._extract_exception()
         finally:
             if self.scr is not None:
                 self.scr.keypad(0)
