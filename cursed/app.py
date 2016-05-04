@@ -94,7 +94,7 @@ class CursedWindow(object):
 
     def fix_xy(self, x, y):
         if x is None or y is None:
-            y0, x0 = self.getxy()
+            x0, y0 = self.getxy()
             x = x0 if x is None else x
             y = y0 if y is None else y
         return x, y
@@ -108,7 +108,7 @@ class CursedWindow(object):
 
     def addnstr(self, s, x=None, y=None, n=None, attr=None):
         x, y = self.fix_xy(x, y)
-        n = self.width - x if n is None else n
+        n = self.width if n is None else n
         if attr is None:
             return self.window.addnstr(y, x, s, n)
         else:
@@ -121,12 +121,12 @@ class CursedWindow(object):
 
     def hline(self, x=None, y=None, char='-', n=None):
         x, y = self.fix_xy(x, y)
-        n = self.width - x if n is None else n
-        self.window.hline(y, x, char, n)
+        n = self.width if n is None else n
+        return self.window.hline(y, x, char, n)
 
     def vline(self, x=None, y=None, char='|', n=None):
-        n = self.height - y if n is None else n
-        self.window.vline(y, x, char, n)
+        n = self.height if n is None else n
+        return self.window.vline(y, x, char, n)
 
     def swap_window_func(self, attr):
         func = getattr(self.window, attr)
