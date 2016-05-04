@@ -9,8 +9,7 @@ class MainWindow(object):
 
     def run(self):
         self.c = self.getkey()
-        for i in range(10):
-            self.addch(i + 1, 1, self.c)
+        self.addstr(self.c * 10, x=1, y=1)
         self.cx = 1
         self.cy = self.cy + 1
         self.hline(n=10)
@@ -22,10 +21,10 @@ class MainWindow(object):
 class SideWindow(object):
 
     def run(self):
-        self.addstr(1, 1, 'foo')
-        self.addstr(1, 2, 'bar')
+        self.addstr('foo', 1, 1)
+        self.addstr('bar', x=1, y=2)
         w, h = self.getwh()
-        self.addstr(1, 3, str(w))
+        self.addstr(str(w), 1, 3)
         self.refresh()
         return self.getkey()
 

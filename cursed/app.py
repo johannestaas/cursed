@@ -6,15 +6,18 @@ import curses
 class CursedWindow(object):
 
     OVERRIDE_FUNCS = (
-        'addch', 'getwh', 'getstr', 'getxy', 'hline', 'vline',
+        'addch', 'addstr', 'addnstr', 'getwh', 'getstr', 'getxy', 'hline',
+        'vline', 'nextline', 'delch', 'instr', 'insstr', 'insnstr', 'inch',
+        'insch',
     )
     WINDOW_SWAP_FUNCS = (
-        'delch', 'addnstr', 'addstr', 'insstr', 'instr', 'mvwin', 'move',
+        'mvwin', 'move',
     )
     SCREEN_SWAP_FUNCS = (
     )
     WINDOW_FUNCS = (
-        'refresh', 'clear', 'deleteln', 'erase', 'inch', 'insertln', 'border',
+        'refresh', 'clear', 'deleteln', 'erase', 'insertln', 'border',
+        'nodelay', 'notimeout', 'clearok', 'is_linetouched', 'is_wintouched',
     )
     SCREEN_FUNCS = (
         'getch', 'getkey',
@@ -30,10 +33,18 @@ class CursedWindow(object):
         self._y = y
         self.bordered = bordered
 
-    def addch(self, x, y, c, *args):
+    def addch(self, c, x=None, y=None, attr=None):
+        x, y = self.fix_xy(x, y)
         if isinstance(c, int):
             c = chr(c)
-        return self.window.addch(y, x, c, *args)
+        if attr is None:
+            return self.window.addch(y, x, c)
+        else:
+            return self.window.addch(y, x, c, attr)
+
+    def delch(self, x=None, y=None):
+        x, y = self.fix_xy(x, y)
+        return self.window.delch(y, x)
 
     def getwh(self):
         h, w = self.window.getmaxyx()
@@ -43,25 +54,78 @@ class CursedWindow(object):
         y, x = self.window.getyx()
         return x, y
 
+    def inch(self, x=None, y=None):
+        x, y = self.fix_xy(x, y)
+        return self.window.inch(y, x)
+
+    def insch(self, ch, x=None, y=None, attr=None):
+        x, y = self.fix_xy(x, y)
+        if attr is None:
+            return self.window.insch(y, x, ch)
+        else:
+            return self.window.insch(y, x, ch, attr)
+
+    def instr(self, x=None, y=None, n=None):
+        x, y = self.fix_xy(x, y)
+        if n is None:
+            return self.window.instr(y, x)
+        else:
+            return self.window.instr(y, x, n)
+
+    def insstr(self, s, x=None, y=None, attr=None):
+        x, y = self.fix_xy(x, y)
+        if attr is None:
+            return self.window.insstr(y, x, s)
+        else:
+            return self.window.insstr(y, x, s, attr)
+
+    def insnstr(self, s, x=None, y=None, n=None, attr=None):
+        x, y = self.fix_xy(x, y)
+        n = n if n is not None else self.width
+        if attr is None:
+            return self.window.insnstr(y, x, s, n)
+        else:
+            return self.window.insnstr(y, x, s, n, attr)
+
+    def nextline(self):
+        x, y = self.getxy()
+        xn = 1 if self.bordered else 0
+        self.window.move(y + 1, xn)
+
+    def fix_xy(self, x, y):
+        if x is None or y is None:
+            y0, x0 = self.getxy()
+            x = x0 if x is None else x
+            y = y0 if y is None else y
+        return x, y
+
+    def addstr(self, s, x=None, y=None, attr=None):
+        x, y = self.fix_xy(x, y)
+        if attr is None:
+            return self.window.addstr(y, x, s)
+        else:
+            return self.window.addstr(y, x, s, attr)
+
+    def addnstr(self, s, x=None, y=None, n=None, attr=None):
+        x, y = self.fix_xy(x, y)
+        n = self.width - x if n is None else n
+        if attr is None:
+            return self.window.addnstr(y, x, s, n)
+        else:
+            return self.window.addnstr(y, x, s, n, attr)
+
     def getstr(self, *args):
         if args:
             return self.window.getstr(args[1], args[0])
         return self.window.getstr()
 
     def hline(self, x=None, y=None, char='-', n=None):
-        if x is None or y is None:
-            x0, y0 = self.getxy()
-            x = x0 if x is None else x
-            y = y0 if y is None else y
-        n = self.width if n is None else n
+        x, y = self.fix_xy(x, y)
+        n = self.width - x if n is None else n
         self.window.hline(y, x, char, n)
 
     def vline(self, x=None, y=None, char='|', n=None):
-        if x is None or y is None:
-            x0, y0 = self.getxy()
-            x = x0 if x is None else x
-            y = y0 if y is None else y
-        n = self.width if n is None else n
+        n = self.height - y if n is None else n
         self.window.vline(y, x, char, n)
 
     def swap_window_func(self, attr):
