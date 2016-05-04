@@ -2,9 +2,4 @@
 
 Simplified curses
 '''
-
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
+from cursed.app import CursedApp
