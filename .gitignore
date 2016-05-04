@@ -4,3 +4,4 @@ syntax: glob
 build/*
 cursed.egg-info/*
 dist/*
+cursed/.ropeproject/
