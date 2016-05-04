@@ -8,10 +8,10 @@ app = CursedApp()
 class MainWindow(object):
 
     def run(self):
-        self.c = self.getch()
-        if self.c in (ord('q'), ord('Q')):
+        self.c = self.getkey()
+        if self.c.lower() == 'q':
             return False
-        if self.c in (ord('e'), ord('E')):
+        if self.c.lower() == 'e':
             raise RuntimeError('example error')
         for i in range(10):
             self.addch(i, 0, self.c)
@@ -28,8 +28,8 @@ class SideWindow(object):
         w, h = self.get_wh()
         self.addstr(0, 2, str(w))
         self.refresh()
-        self.c = self.getch()
-        return self.c not in (ord('q'), ord('Q'))
+        self.c = self.getkey()
+        return self.c.lower() != 'q'
 
 
 def loop():

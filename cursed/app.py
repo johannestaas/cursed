@@ -6,15 +6,16 @@ import curses
 class CursedWindow(object):
 
     OVERRIDE_FUNCS = (
-        'addch', 'get_wh',
+        'addch', 'get_wh', 'getstr',
     )
     WINDOW_SWAP_FUNCS = (
-        'delch', 'addnstr', 'addstr',
+        'delch', 'addnstr', 'addstr', 'insstr', 'instr', 'mvwin', 'move',
     )
     SCREEN_SWAP_FUNCS = (
     )
     WINDOW_FUNCS = (
-        'refresh', 'clear', 'deleteln', 'erase',
+        'refresh', 'clear', 'deleteln', 'erase', 'hline', 'vline', 'inch',
+        'insertln',
     )
     SCREEN_FUNCS = (
         'getch', 'getkey',
@@ -38,6 +39,11 @@ class CursedWindow(object):
         h, w = self.window.getmaxyx()
         return w, h
 
+    def getstr(self, *args):
+        if args:
+            return self.window.getstr(args[1], args[0])
+        return self.window.getstr()
+
     def run(self, window):
         self.window = window.subwin(self.height, self.width, self.y, self.x)
         for attr in self.OVERRIDE_FUNCS:
@@ -47,17 +53,22 @@ class CursedWindow(object):
         for attr in self.SCREEN_FUNCS:
             setattr(self.cls, attr, getattr(self.app.scr, attr))
         for attr in self.WINDOW_SWAP_FUNCS:
-            window_func = getattr(self.window, attr)
 
-            def new_func(s, x, y, *args, **kwargs):
-                return window_func(y, x, *args, **kwargs)
-            setattr(self.cls, attr, new_func)
+            def closure():
+                func = getattr(self.window, attr)
+
+                def new_func(s, x, y, *args, **kwargs):
+                    return func(y, x, *args, **kwargs)
+                setattr(self.cls, attr, new_func)
+            closure()
         for attr in self.SCREEN_SWAP_FUNCS:
-            scr_func = getattr(self.app.scr, attr)
+            def closure():
+                func = getattr(self.app.scr, attr)
 
-            def new_func(s, x, y, *args, **kwargs):
-                return scr_func(y, x, *args, **kwargs)
-            setattr(self.cls, attr, new_func)
+                def new_func(s, x, y, *args, **kwargs):
+                    return func(y, x, *args, **kwargs)
+                setattr(self.cls, attr, new_func)
+            closure()
 
 
 class Result(object):
