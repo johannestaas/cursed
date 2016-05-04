@@ -10,12 +10,12 @@ class CursedWindow(object):
     )
     WINDOW_SWAP_FUNCS = (
         'delch', 'addnstr', 'addstr', 'insstr', 'instr', 'mvwin', 'move',
+        'hline', 'vline',
     )
     SCREEN_SWAP_FUNCS = (
     )
     WINDOW_FUNCS = (
-        'refresh', 'clear', 'deleteln', 'erase', 'hline', 'vline', 'inch',
-        'insertln', 'border',
+        'refresh', 'clear', 'deleteln', 'erase', 'inch', 'insertln', 'border',
     )
     SCREEN_FUNCS = (
         'getch', 'getkey',

@@ -15,6 +15,7 @@ class MainWindow(object):
             raise RuntimeError('example error')
         for i in range(10):
             self.addch(i + 1, 1, self.c)
+        self.hline(1, 2, '-', 10)
         self.refresh()
         return True
 
