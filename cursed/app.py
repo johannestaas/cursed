@@ -15,13 +15,13 @@ class CursedWindow(object):
     )
     WINDOW_FUNCS = (
         'refresh', 'clear', 'deleteln', 'erase', 'hline', 'vline', 'inch',
-        'insertln',
+        'insertln', 'border',
     )
     SCREEN_FUNCS = (
         'getch', 'getkey',
     )
 
-    def __init__(self, app, cls, width=80, height=24, x=0, y=0):
+    def __init__(self, app, cls, width=80, height=24, x=0, y=0, bordered=False):
         self.app = app
         self.cls = cls
         self.window = None
@@ -29,6 +29,7 @@ class CursedWindow(object):
         self.height = height
         self.x = x
         self.y = y
+        self.bordered = bordered
 
     def addch(self, x, y, c, *args):
         if isinstance(c, int):
@@ -60,6 +61,8 @@ class CursedWindow(object):
 
     def run(self, window):
         self.window = window.subwin(self.height, self.width, self.y, self.x)
+        if self.bordered:
+            self.window.border()
         for attr in self.OVERRIDE_FUNCS:
             setattr(self.cls, attr, getattr(self, attr))
         for attr in self.WINDOW_FUNCS:

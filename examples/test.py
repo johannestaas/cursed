@@ -4,7 +4,7 @@ from cursed import CursedApp
 app = CursedApp()
 
 
-@app.window(width=60)
+@app.window(width=60, bordered=True)
 class MainWindow(object):
 
     def run(self):
@@ -14,19 +14,19 @@ class MainWindow(object):
         if self.c.lower() == 'e':
             raise RuntimeError('example error')
         for i in range(10):
-            self.addch(i, 0, self.c)
+            self.addch(i + 1, 1, self.c)
         self.refresh()
         return True
 
 
-@app.window(width=20, x=60)
+@app.window(width=20, x=60, bordered=True)
 class SideWindow(object):
 
     def run(self):
-        self.addstr(0, 0, 'foo')
-        self.addstr(0, 1, 'bar')
+        self.addstr(1, 1, 'foo')
+        self.addstr(1, 2, 'bar')
         w, h = self.get_wh()
-        self.addstr(0, 2, str(w))
+        self.addstr(1, 3, str(w))
         self.refresh()
         self.c = self.getkey()
         return self.c.lower() != 'q'
