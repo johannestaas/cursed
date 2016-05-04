@@ -9,15 +9,13 @@ class MainWindow(object):
 
     def run(self):
         self.c = self.getkey()
-        if self.c.lower() == 'q':
-            return False
-        if self.c.lower() == 'e':
-            raise RuntimeError('example error')
         for i in range(10):
             self.addch(i + 1, 1, self.c)
-        self.hline(1, 2, '-', 10)
+        self.cx = 1
+        self.cy = self.cy + 1
+        self.hline(n=10)
         self.refresh()
-        return True
+        return self.c
 
 
 @app.window(width=20, x=60, bordered=True)
@@ -26,20 +24,25 @@ class SideWindow(object):
     def run(self):
         self.addstr(1, 1, 'foo')
         self.addstr(1, 2, 'bar')
-        w, h = self.get_wh()
+        w, h = self.getwh()
         self.addstr(1, 3, str(w))
         self.refresh()
-        self.c = self.getkey()
-        return self.c.lower() != 'q'
+        return self.getkey()
 
 
 def loop():
     window = MainWindow()
     side = SideWindow()
-    while window.run():
-        pass
-    while side.run():
-        pass
+    while True:
+        char = window.run()
+        if char.lower() in 'q':
+            break
+    window.clear()
+    window.refresh()
+    while True:
+        char = side.run()
+        if char.lower() in 'q':
+            break
     window.clear()
 
 result = app.run(loop)

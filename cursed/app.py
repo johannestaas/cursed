@@ -6,11 +6,10 @@ import curses
 class CursedWindow(object):
 
     OVERRIDE_FUNCS = (
-        'addch', 'get_wh', 'getstr',
+        'addch', 'getwh', 'getstr', 'getxy', 'hline', 'vline',
     )
     WINDOW_SWAP_FUNCS = (
         'delch', 'addnstr', 'addstr', 'insstr', 'instr', 'mvwin', 'move',
-        'hline', 'vline',
     )
     SCREEN_SWAP_FUNCS = (
     )
@@ -27,8 +26,8 @@ class CursedWindow(object):
         self.window = None
         self.width = width
         self.height = height
-        self.x = x
-        self.y = y
+        self._x = x
+        self._y = y
         self.bordered = bordered
 
     def addch(self, x, y, c, *args):
@@ -36,14 +35,34 @@ class CursedWindow(object):
             c = chr(c)
         return self.window.addch(y, x, c, *args)
 
-    def get_wh(self):
+    def getwh(self):
         h, w = self.window.getmaxyx()
         return w, h
+
+    def getxy(self):
+        y, x = self.window.getyx()
+        return x, y
 
     def getstr(self, *args):
         if args:
             return self.window.getstr(args[1], args[0])
         return self.window.getstr()
+
+    def hline(self, x=None, y=None, char='-', n=None):
+        if x is None or y is None:
+            x0, y0 = self.getxy()
+            x = x0 if x is None else x
+            y = y0 if y is None else y
+        n = self.width if n is None else n
+        self.window.hline(y, x, char, n)
+
+    def vline(self, x=None, y=None, char='|', n=None):
+        if x is None or y is None:
+            x0, y0 = self.getxy()
+            x = x0 if x is None else x
+            y = y0 if y is None else y
+        n = self.width if n is None else n
+        self.window.vline(y, x, char, n)
 
     def swap_window_func(self, attr):
         func = getattr(self.window, attr)
@@ -59,8 +78,32 @@ class CursedWindow(object):
             return func(y, x, *args, **kwargs)
         setattr(self.cls, attr, new_func)
 
+    def getter_cx(self):
+        def get_cx(s):
+            x, y = self.getxy()
+            return x
+        return get_cx
+
+    def getter_cy(self):
+        def get_cy(s):
+            x, y = self.getxy()
+            return y
+        return get_cy
+
+    def setter_cx(self):
+        def set_cx(s, v):
+            x, y = self.getxy()
+            s.move(v, y)
+        return set_cx
+
+    def setter_cy(self):
+        def set_cy(s, v):
+            x, y = self.getxy()
+            s.move(x, v)
+        return set_cy
+
     def run(self, window):
-        self.window = window.subwin(self.height, self.width, self.y, self.x)
+        self.window = window.subwin(self.height, self.width, self._y, self._x)
         if self.bordered:
             self.window.border()
         for attr in self.OVERRIDE_FUNCS:
@@ -73,6 +116,8 @@ class CursedWindow(object):
             self.swap_window_func(attr)
         for attr in self.SCREEN_SWAP_FUNCS:
             self.swap_screen_func(attr)
+        self.cls.cx = property(self.getter_cx(), self.setter_cx())
+        self.cls.cy = property(self.getter_cy(), self.setter_cy())
 
 
 class Result(object):
