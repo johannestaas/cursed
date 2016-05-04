@@ -30,5 +30,7 @@ Example::
 Release Notes
 -------------
 
+:0.0.2:
+    - implemented lots from https://docs.python.org/2/library/curses.html
 :0.0.1:
     - Project created
