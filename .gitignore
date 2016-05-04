@@ -5,3 +5,4 @@ build/*
 cursed.egg-info/*
 dist/*
 cursed/.ropeproject/
+.ropeproject/
