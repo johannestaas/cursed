@@ -23,7 +23,8 @@ class CursedWindow(object):
         'getch', 'getkey',
     )
 
-    def __init__(self, app, cls, width=80, height=24, x=0, y=0, bordered=False):
+    def __init__(self, app, cls, width=80, height=24, x=0, y=0, bordered=False,
+                 border_shift=True):
         self.app = app
         self.cls = cls
         self.window = None
@@ -32,6 +33,7 @@ class CursedWindow(object):
         self._x = x
         self._y = y
         self.bordered = bordered
+        self.border_shift = border_shift
 
     def addch(self, c, x=None, y=None, attr=None):
         x, y = self.fix_xy(x, y)
@@ -52,6 +54,8 @@ class CursedWindow(object):
 
     def getxy(self):
         y, x = self.window.getyx()
+        if self.border_shift:
+            return x - 1, y - 1
         return x, y
 
     def inch(self, x=None, y=None):
@@ -87,16 +91,20 @@ class CursedWindow(object):
         else:
             return self.window.insnstr(y, x, s, n, attr)
 
-    def nextline(self):
+    def nextline(self, cr=True):
         x, y = self.getxy()
-        xn = 1 if self.bordered else 0
-        self.window.move(y + 1, xn)
+        if cr:
+            x = 0
+        x, y = self.fix_xy(x, y)
+        self.window.move(y + 1, x)
 
     def fix_xy(self, x, y):
         if x is None or y is None:
             x0, y0 = self.getxy()
             x = x0 if x is None else x
             y = y0 if y is None else y
+        if self.border_shift:
+            return x + 1, y + 1
         return x, y
 
     def addstr(self, s, x=None, y=None, attr=None):
@@ -116,7 +124,8 @@ class CursedWindow(object):
 
     def getstr(self, *args):
         if args:
-            return self.window.getstr(args[1], args[0])
+            x, y = self.fix_xy(*args)
+            return self.window.getstr(x, y)
         return self.window.getstr()
 
     def hline(self, x=None, y=None, char='-', n=None):
@@ -125,6 +134,7 @@ class CursedWindow(object):
         return self.window.hline(y, x, char, n)
 
     def vline(self, x=None, y=None, char='|', n=None):
+        x, y = self.fix_xy(x, y)
         n = self.height if n is None else n
         return self.window.vline(y, x, char, n)
 
@@ -132,6 +142,7 @@ class CursedWindow(object):
         func = getattr(self.window, attr)
 
         def new_func(s, x, y, *args, **kwargs):
+            x, y = self.fix_xy(x, y)
             return func(y, x, *args, **kwargs)
         setattr(self.cls, attr, new_func)
 
@@ -139,30 +150,35 @@ class CursedWindow(object):
         func = getattr(self.app.scr, attr)
 
         def new_func(s, x, y, *args, **kwargs):
+            x, y = self.fix_xy(x, y)
             return func(y, x, *args, **kwargs)
         setattr(self.cls, attr, new_func)
 
     def getter_cx(self):
         def get_cx(s):
             x, y = self.getxy()
+            x, y = self.fix_xy(x, y)
             return x
         return get_cx
 
     def getter_cy(self):
         def get_cy(s):
             x, y = self.getxy()
+            x, y = self.fix_xy(x, y)
             return y
         return get_cy
 
     def setter_cx(self):
         def set_cx(s, v):
             x, y = self.getxy()
+            x, y = self.fix_xy(x, y)
             s.move(v, y)
         return set_cx
 
     def setter_cy(self):
         def set_cy(s, v):
             x, y = self.getxy()
+            x, y = self.fix_xy(x, y)
             s.move(x, v)
         return set_cy
 
