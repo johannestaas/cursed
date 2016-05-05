@@ -138,6 +138,12 @@ class CursedWindow(object):
         n = self.height if n is None else n
         return self.window.vline(y, x, char, n)
 
+    def set_window_func(self, attr):
+        setattr(self.cls, attr, getattr(self.window, attr))
+
+    def set_screen_func(self, attr):
+        setattr(self.cls, attr, getattr(self.app.scr, attr))
+
     def swap_window_func(self, attr):
         func = getattr(self.window, attr)
 
@@ -189,9 +195,9 @@ class CursedWindow(object):
         for attr in self.OVERRIDE_FUNCS:
             setattr(self.cls, attr, getattr(self, attr))
         for attr in self.WINDOW_FUNCS:
-            setattr(self.cls, attr, getattr(self.window, attr))
+            self.set_window_func(attr)
         for attr in self.SCREEN_FUNCS:
-            setattr(self.cls, attr, getattr(self.app.scr, attr))
+            self.set_screen_func(attr)
         for attr in self.WINDOW_SWAP_FUNCS:
             self.swap_window_func(attr)
         for attr in self.SCREEN_SWAP_FUNCS:
