@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import curses
+import gevent
 
 
 class CursedWindowClass(type):
@@ -18,6 +19,8 @@ class CursedWindowClass(type):
         new.X = dct.get('X', 0)
         new.Y = dct.get('Y', 0)
         new.BORDERED = dct.get('BORDERED', False)
+        new.EVENTS = []
+        new.RESULTS = []
         cls.WINDOWS += [new]
         return new
 
@@ -209,6 +212,7 @@ class CursedWindow(object):
 
     @classmethod
     def _cw_run(cls, app, window):
+        cls.RUNNING = True
         cls.APP = app
         cls.WINDOW = window.subwin(cls.HEIGHT, cls.WIDTH, cls.Y, cls.X)
         if cls.BORDERED:
@@ -221,6 +225,21 @@ class CursedWindow(object):
             cls._cw_swap_window_func(attr)
         for attr in cls._CW_SCREEN_SWAP_FUNCS:
             cls._cw_swap_screen_func(attr)
+        while cls.RUNNING:
+            i = len(cls.EVENTS)
+            for func_name, args, kwargs in cls.EVENTS[:i]:
+                if func_name == 'quit':
+                    cls.RUNNING = False
+                    break
+                func = getattr(cls, func_name)
+                cls.RESULTS += [
+                    (func_name, args, kwargs, func(*args, **kwargs))
+                ]
+            cls.EVENTS = cls.EVENTS[i:]
+
+    @classmethod
+    def new_event(cls, func_name, *args, **kwargs):
+        cls.EVENTS += [(func_name, args, kwargs)]
 
 
 class Result(object):
@@ -262,12 +281,14 @@ class CursedApp(object):
     def __init__(self):
         self.scr = None
         self.menu = None
+        self.threads = []
 
     def run_windows(self):
         for cw in CursedWindowClass.WINDOWS:
-            cw._cw_run(self, self.window)
+            cw.new_event('run')
+            self.threads += [gevent.spawn(cw._cw_run, self, self.window)]
 
-    def run(self, loop_func, *args, **kwargs):
+    def run(self):
         result = Result()
         try:
             self.scr = curses.initscr()
@@ -276,7 +297,7 @@ class CursedApp(object):
             self.window = self.scr.subwin(0, 0)
             self.window.keypad(1)
             self.run_windows()
-            loop_func(*args, **kwargs)
+            gevent.joinall(self.threads)
         except KeyboardInterrupt:
             result._extract_exception()
         except Exception:

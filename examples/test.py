@@ -10,12 +10,15 @@ class MainWindow(CursedWindow):
 
     @classmethod
     def run(cls):
-        cls.c = cls.getkey()
-        cls.addstr(cls.c * 10, x=0, y=0)
-        cls.nextline()
-        cls.hline(n=10)
-        cls.refresh()
-        return cls.c
+        while True:
+            c = cls.getkey()
+            if c.lower() == 'q':
+                cls.new_event('quit')
+                break
+            cls.addstr(c * 10, x=0, y=0)
+            cls.nextline()
+            cls.hline(n=10)
+            cls.refresh()
 
 
 class SideWindow(CursedWindow):
@@ -34,20 +37,7 @@ class SideWindow(CursedWindow):
         return cls.getkey()
 
 
-def loop():
-    while True:
-        char = MainWindow.run()
-        if char.lower() in 'q':
-            break
-    MainWindow.clear()
-    MainWindow.refresh()
-    while True:
-        char = SideWindow.run()
-        if char.lower() in 'q':
-            break
-    MainWindow.clear()
-
-result = app.run(loop)
+result = app.run()
 print(result)
 if result.interrupted():
     print('Ctrl-C pressed.')
