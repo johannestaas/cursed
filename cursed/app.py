@@ -33,67 +33,67 @@ class CursedWindow(object):
     )
 
     def addch(self, c, x=None, y=None, attr=None):
-        x, y = self.fix_xy(x, y)
+        x, y = self._fix_xy(x, y)
         if isinstance(c, int):
             c = chr(c)
         if attr is None:
-            return self.window.addch(y, x, c)
+            return self.WINDOW.addch(y, x, c)
         else:
-            return self.window.addch(y, x, c, attr)
+            return self.WINDOW.addch(y, x, c, attr)
 
     def delch(self, x=None, y=None):
-        x, y = self.fix_xy(x, y)
-        return self.window.delch(y, x)
+        x, y = self._fix_xy(x, y)
+        return self.WINDOW.delch(y, x)
 
     def getwh(self):
-        h, w = self.window.getmaxyx()
+        h, w = self.WINDOW.getmaxyx()
         return w, h
 
     def getxy(self):
-        y, x = self.window.getyx()
+        y, x = self.WINDOW.getyx()
         if self.border_shift:
             return x - 1, y - 1
         return x, y
 
     def inch(self, x=None, y=None):
-        x, y = self.fix_xy(x, y)
-        return self.window.inch(y, x)
+        x, y = self._fix_xy(x, y)
+        return self.WINDOW.inch(y, x)
 
     def insch(self, ch, x=None, y=None, attr=None):
-        x, y = self.fix_xy(x, y)
+        x, y = self._fix_xy(x, y)
         if attr is None:
-            return self.window.insch(y, x, ch)
+            return self.WINDOW.insch(y, x, ch)
         else:
-            return self.window.insch(y, x, ch, attr)
+            return self.WINDOW.insch(y, x, ch, attr)
 
     def instr(self, x=None, y=None, n=None):
-        x, y = self.fix_xy(x, y)
+        x, y = self._fix_xy(x, y)
         if n is None:
-            return self.window.instr(y, x)
+            return self.WINDOW.instr(y, x)
         else:
-            return self.window.instr(y, x, n)
+            return self.WINDOW.instr(y, x, n)
 
     def insstr(self, s, x=None, y=None, attr=None):
-        x, y = self.fix_xy(x, y)
+        x, y = self._fix_xy(x, y)
         if attr is None:
-            return self.window.insstr(y, x, s)
+            return self.WINDOW.insstr(y, x, s)
         else:
-            return self.window.insstr(y, x, s, attr)
+            return self.WINDOW.insstr(y, x, s, attr)
 
     def insnstr(self, s, x=None, y=None, n=None, attr=None):
-        x, y = self.fix_xy(x, y)
-        n = n if n is not None else self.width
+        x, y = self._fix_xy(x, y)
+        n = n if n is not None else self.WIDTH
         if attr is None:
-            return self.window.insnstr(y, x, s, n)
+            return self.WINDOW.insnstr(y, x, s, n)
         else:
-            return self.window.insnstr(y, x, s, n, attr)
+            return self.WINDOW.insnstr(y, x, s, n, attr)
 
     def nextline(self, cr=True):
         x, y = self.getxy()
         if cr:
             x = 0
-        x, y = self.fix_xy(x, y)
-        self.window.move(y + 1, x)
+        x, y = self._fix_xy(x, y)
+        self.WINDOW.move(y + 1, x)
 
     def fix_xy(self, x, y):
         if x is None or y is None:
@@ -105,90 +105,90 @@ class CursedWindow(object):
         return x, y
 
     def addstr(self, s, x=None, y=None, attr=None):
-        x, y = self.fix_xy(x, y)
+        x, y = self._fix_xy(x, y)
         if attr is None:
-            return self.window.addstr(y, x, s)
+            return self.WINDOW.addstr(y, x, s)
         else:
-            return self.window.addstr(y, x, s, attr)
+            return self.WINDOW.addstr(y, x, s, attr)
 
     def addnstr(self, s, x=None, y=None, n=None, attr=None):
-        x, y = self.fix_xy(x, y)
-        n = self.width if n is None else n
+        x, y = self._fix_xy(x, y)
+        n = self.WIDTH if n is None else n
         if attr is None:
-            return self.window.addnstr(y, x, s, n)
+            return self.WINDOW.addnstr(y, x, s, n)
         else:
-            return self.window.addnstr(y, x, s, n, attr)
+            return self.WINDOW.addnstr(y, x, s, n, attr)
 
     def getstr(self, *args):
         if args:
-            x, y = self.fix_xy(*args)
-            return self.window.getstr(x, y)
-        return self.window.getstr()
+            x, y = self._fix_xy(*args)
+            return self.WINDOW.getstr(x, y)
+        return self.WINDOW.getstr()
 
     def hline(self, x=None, y=None, char='-', n=None):
-        x, y = self.fix_xy(x, y)
-        n = self.width if n is None else n
-        return self.window.hline(y, x, char, n)
+        x, y = self._fix_xy(x, y)
+        n = self.WIDTH if n is None else n
+        return self.WINDOW.hline(y, x, char, n)
 
     def vline(self, x=None, y=None, char='|', n=None):
-        x, y = self.fix_xy(x, y)
-        n = self.height if n is None else n
-        return self.window.vline(y, x, char, n)
+        x, y = self._fix_xy(x, y)
+        n = self.HEIGHT if n is None else n
+        return self.WINDOW.vline(y, x, char, n)
 
-    def set_window_func(self, attr):
-        setattr(self.cls, attr, getattr(self.window, attr))
+    def _cw_set_window_func(self, attr):
+        setattr(self.cls, attr, getattr(self.WINDOW, attr))
 
-    def set_screen_func(self, attr):
+    def _cw_set_screen_func(self, attr):
         setattr(self.cls, attr, getattr(self.app.scr, attr))
 
-    def swap_window_func(self, attr):
-        func = getattr(self.window, attr)
+    def _cw_swap_window_func(self, attr):
+        func = getattr(self.WINDOW, attr)
 
         def new_func(s, x, y, *args, **kwargs):
-            x, y = self.fix_xy(x, y)
+            x, y = self._fix_xy(x, y)
             return func(y, x, *args, **kwargs)
         setattr(self.cls, attr, new_func)
 
-    def swap_screen_func(self, attr):
+    def _cw_swap_screen_func(self, attr):
         func = getattr(self.app.scr, attr)
 
         def new_func(s, x, y, *args, **kwargs):
-            x, y = self.fix_xy(x, y)
+            x, y = self._fix_xy(x, y)
             return func(y, x, *args, **kwargs)
         setattr(self.cls, attr, new_func)
 
     @property
     def cx(self):
-        x, y = self.fix_xy(*self.get_xy())
+        x, y = self._fix_xy(*self.get_xy())
         return x
 
     @property
     def cy(self):
-        x, y = self.fix_xy(*self.get_xy())
+        x, y = self._fix_xy(*self.get_xy())
         return y
 
     @cx.setter
     def cx(self, val):
-        x, y = self.fix_xy(*self.get_xy())
+        x, y = self._fix_xy(*self.get_xy())
         self.move(val, y)
 
     @cy.setter
     def cy(self, val):
-        x, y = self.fix_xy(*self.get_xy())
+        x, y = self._fix_xy(*self.get_xy())
         self.move(x, val)
 
     def _cw_run(self, window):
-        self.window = window.subwin(self.height, self.width, self._y, self._x)
-        if self.bordered:
-            self.window.border()
+        self.WINDOW = window.subwin(self.HEIGHT, self.WIDTH, self.Y, self.X)
+        if self.BORDERED:
+            self.WINDOW.border()
         for attr in self._CW_WINDOW_FUNCS:
-            self.set_window_func(attr)
+            self._cw_set_window_func(attr)
         for attr in self._CW_SCREEN_FUNCS:
-            self.set_screen_func(attr)
+            self._cw_set_screen_func(attr)
         for attr in self._CW_WINDOW_SWAP_FUNCS:
-            self.swap_window_func(attr)
+            self._cw_swap_window_func(attr)
         for attr in self._CW_SCREEN_SWAP_FUNCS:
-            self.swap_screen_func(attr)
+            self._cw_swap_screen_func(attr)
 
 
 class Result(object):
