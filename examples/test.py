@@ -1,48 +1,51 @@
 #!/usr/bin/env python
-from cursed import CursedApp
+from cursed import CursedApp, CursedWindow
 
 app = CursedApp()
 
 
-@app.window(width=60, bordered=True)
-class MainWindow(object):
+class MainWindow(CursedWindow):
+    WIDTH = 60
+    BORDERED = True
 
-    def run(self):
-        self.c = self.getkey()
-        self.addstr(self.c * 10, x=0, y=0)
-        self.nextline()
-        self.hline(n=10)
-        self.refresh()
-        return self.c
+    @classmethod
+    def run(cls):
+        cls.c = cls.getkey()
+        cls.addstr(cls.c * 10, x=0, y=0)
+        cls.nextline()
+        cls.hline(n=10)
+        cls.refresh()
+        return cls.c
 
 
-@app.window(width=20, x=60, bordered=True)
-class SideWindow(object):
+class SideWindow(CursedWindow):
+    WIDTH = 20
+    X = 60
+    BORDERED = True
 
-    def run(self):
-        self.addstr('foo', 0, 0)
-        self.addstr('bar', x=0, y=1)
-        w, h = self.getwh()
-        self.nextline()
-        self.addstr(str(w))
-        self.refresh()
-        return self.getkey()
+    @classmethod
+    def run(cls):
+        cls.addstr('foo', 0, 0)
+        cls.addstr('bar', x=0, y=1)
+        w, h = cls.getwh()
+        cls.nextline()
+        cls.addstr(str(w))
+        cls.refresh()
+        return cls.getkey()
 
 
 def loop():
-    window = MainWindow()
-    side = SideWindow()
     while True:
-        char = window.run()
+        char = MainWindow.run()
         if char.lower() in 'q':
             break
-    window.clear()
-    window.refresh()
+    MainWindow.clear()
+    MainWindow.refresh()
     while True:
-        char = side.run()
+        char = SideWindow.run()
         if char.lower() in 'q':
             break
-    window.clear()
+    MainWindow.clear()
 
 result = app.run(loop)
 print(result)
