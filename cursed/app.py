@@ -3,37 +3,39 @@ import sys
 import curses
 
 
-class CursedWindow(object):
+class CursedWindowClass(type):
 
-    OVERRIDE_FUNCS = (
+    def __new__(cls, name, parents, dct):
+        cls.WIDTH = dct.get('WIDTH', 80)
+        cls.HEIGHT = dct.get('HEIGHT', 24)
+        cls.WINDOW = None
+        cls.APP = None
+        cls.X = dct.get('X', 0)
+        cls.Y = dct.get('Y', 0)
+        cls.BORDERED = dct.get('BORDERED', False)
+        return super(CursedWindowClass, cls).__new__(name, parents, dct)
+
+
+class CursedWindow(object):
+    __metaclass__ = CursedWindowClass
+
+    _CW_OVERRIDE_FUNCS = (
         'addch', 'addstr', 'addnstr', 'getwh', 'getstr', 'getxy', 'hline',
         'vline', 'nextline', 'delch', 'instr', 'insstr', 'insnstr', 'inch',
         'insch',
     )
-    WINDOW_SWAP_FUNCS = (
+    _CW_WINDOW_SWAP_FUNCS = (
         'mvwin', 'move',
     )
-    SCREEN_SWAP_FUNCS = (
+    _CW_SCREEN_SWAP_FUNCS = (
     )
-    WINDOW_FUNCS = (
+    _CW_WINDOW_FUNCS = (
         'refresh', 'clear', 'deleteln', 'erase', 'insertln', 'border',
         'nodelay', 'notimeout', 'clearok', 'is_linetouched', 'is_wintouched',
     )
-    SCREEN_FUNCS = (
+    _CW_SCREEN_FUNCS = (
         'getch', 'getkey',
     )
-
-    def __init__(self, app, cls, width=80, height=24, x=0, y=0, bordered=False,
-                 border_shift=True):
-        self.app = app
-        self.cls = cls
-        self.window = None
-        self.width = width
-        self.height = height
-        self._x = x
-        self._y = y
-        self.bordered = bordered
-        self.border_shift = border_shift
 
     def addch(self, c, x=None, y=None, attr=None):
         x, y = self.fix_xy(x, y)
@@ -192,15 +194,15 @@ class CursedWindow(object):
         self.window = window.subwin(self.height, self.width, self._y, self._x)
         if self.bordered:
             self.window.border()
-        for attr in self.OVERRIDE_FUNCS:
+        for attr in self._CW_OVERRIDE_FUNCS:
             setattr(self.cls, attr, getattr(self, attr))
-        for attr in self.WINDOW_FUNCS:
+        for attr in self._CW_WINDOW_FUNCS:
             self.set_window_func(attr)
-        for attr in self.SCREEN_FUNCS:
+        for attr in self._CW_SCREEN_FUNCS:
             self.set_screen_func(attr)
-        for attr in self.WINDOW_SWAP_FUNCS:
+        for attr in self._CW_WINDOW_SWAP_FUNCS:
             self.swap_window_func(attr)
-        for attr in self.SCREEN_SWAP_FUNCS:
+        for attr in self._CW_SCREEN_SWAP_FUNCS:
             self.swap_screen_func(attr)
         self.cls.cx = property(self.getter_cx(), self.setter_cx())
         self.cls.cy = property(self.getter_cy(), self.setter_cy())
