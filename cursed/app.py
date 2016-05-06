@@ -19,11 +19,6 @@ class CursedWindowClass(type):
 class CursedWindow(object):
     __metaclass__ = CursedWindowClass
 
-    _CW_OVERRIDE_FUNCS = (
-        'addch', 'addstr', 'addnstr', 'getwh', 'getstr', 'getxy', 'hline',
-        'vline', 'nextline', 'delch', 'instr', 'insstr', 'insnstr', 'inch',
-        'insch',
-    )
     _CW_WINDOW_SWAP_FUNCS = (
         'mvwin', 'move',
     )
@@ -162,40 +157,30 @@ class CursedWindow(object):
             return func(y, x, *args, **kwargs)
         setattr(self.cls, attr, new_func)
 
-    def getter_cx(self):
-        def get_cx(s):
-            x, y = self.getxy()
-            x, y = self.fix_xy(x, y)
-            return x
-        return get_cx
+    @property
+    def cx(self):
+        x, y = self.fix_xy(*self.get_xy())
+        return x
 
-    def getter_cy(self):
-        def get_cy(s):
-            x, y = self.getxy()
-            x, y = self.fix_xy(x, y)
-            return y
-        return get_cy
+    @property
+    def cy(self):
+        x, y = self.fix_xy(*self.get_xy())
+        return y
 
-    def setter_cx(self):
-        def set_cx(s, v):
-            x, y = self.getxy()
-            x, y = self.fix_xy(x, y)
-            s.move(v, y)
-        return set_cx
+    @cx.setter
+    def cx(self, val):
+        x, y = self.fix_xy(*self.get_xy())
+        self.move(val, y)
 
-    def setter_cy(self):
-        def set_cy(s, v):
-            x, y = self.getxy()
-            x, y = self.fix_xy(x, y)
-            s.move(x, v)
-        return set_cy
+    @cy.setter
+    def cy(self, val):
+        x, y = self.fix_xy(*self.get_xy())
+        self.move(x, val)
 
-    def run(self, window):
+    def _cw_run(self, window):
         self.window = window.subwin(self.height, self.width, self._y, self._x)
         if self.bordered:
             self.window.border()
-        for attr in self._CW_OVERRIDE_FUNCS:
-            setattr(self.cls, attr, getattr(self, attr))
         for attr in self._CW_WINDOW_FUNCS:
             self.set_window_func(attr)
         for attr in self._CW_SCREEN_FUNCS:
@@ -204,8 +189,6 @@ class CursedWindow(object):
             self.swap_window_func(attr)
         for attr in self._CW_SCREEN_SWAP_FUNCS:
             self.swap_screen_func(attr)
-        self.cls.cx = property(self.getter_cx(), self.setter_cx())
-        self.cls.cy = property(self.getter_cy(), self.setter_cy())
 
 
 class Result(object):
