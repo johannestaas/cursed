@@ -41,6 +41,20 @@ class CursedWindow(object):
     )
 
     @classmethod
+    def getchar(cls):
+        char = cls.getch()
+        if char is None:
+            return None
+        return chr(char)
+
+    @classmethod
+    def getlchar(cls):
+        char = cls.getchar()
+        if char is None:
+            return None
+        return char.lower()
+
+    @classmethod
     def getch(cls):
         char = cls.APP.window.getch()
         if char == -1:
