@@ -7,18 +7,18 @@ app = CursedApp()
 class MainWindow(CursedWindow):
     WIDTH = 60
     BORDERED = True
+    ACTIVE = True
 
     @classmethod
     def run(cls):
-        while True:
-            c = cls.getkey()
-            if c.lower() == 'q':
-                cls.new_event('quit')
-                break
-            cls.addstr(c * 10, x=0, y=0)
-            cls.nextline()
-            cls.hline(n=10)
-            cls.refresh()
+        c = cls.getkey()
+        if c.lower() == 'q':
+            cls.new_event('quit')
+            return
+        cls.addstr(c * 10, x=0, y=0)
+        cls.nextline()
+        cls.hline(n=10)
+        cls.refresh()
 
 
 class SideWindow(CursedWindow):
@@ -34,7 +34,9 @@ class SideWindow(CursedWindow):
         cls.nextline()
         cls.addstr(str(w))
         cls.refresh()
-        return cls.getkey()
+        c = cls.getkey()
+        if c.lower() == 'q':
+            cls.new_event('quit')
 
 
 result = app.run()

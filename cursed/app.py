@@ -38,8 +38,18 @@ class CursedWindow(object):
         'nodelay', 'notimeout', 'clearok', 'is_linetouched', 'is_wintouched',
     )
     _CW_SCREEN_FUNCS = (
-        'getch', 'getkey',
     )
+
+    @classmethod
+    def getch(cls):
+        char = cls.APP.window.getch()
+        if char == -1:
+            return None
+        return char
+
+    @classmethod
+    def getkey(cls):
+        return cls.APP.window.getkey()
 
     @classmethod
     def addch(cls, c, x=None, y=None, attr=None):
@@ -186,6 +196,14 @@ class CursedWindow(object):
             return func(y, x, *args, **kwargs)
         setattr(cls, attr, new_func)
 
+    @classmethod
+    def app_get(cls, var):
+        return getattr(cls.APP, var)
+
+    @classmethod
+    def app_set(cls, var, val):
+        return setattr(cls.APP, var, val)
+
     @property
     @classmethod
     def cx(cls):
@@ -225,7 +243,13 @@ class CursedWindow(object):
             cls._cw_swap_window_func(attr)
         for attr in cls._CW_SCREEN_SWAP_FUNCS:
             cls._cw_swap_screen_func(attr)
+        cls.WINDOW.refresh()
+        has_update = hasattr(cls, 'update') and callable(cls.update)
         while cls.RUNNING:
+            # Yield to others for a bit
+            gevent.sleep(0)
+            if not cls.RUNNING:
+                continue
             i = len(cls.EVENTS)
             for func_name, args, kwargs in cls.EVENTS[:i]:
                 if func_name == 'quit':
@@ -236,6 +260,8 @@ class CursedWindow(object):
                     (func_name, args, kwargs, func(*args, **kwargs))
                 ]
             cls.EVENTS = cls.EVENTS[i:]
+            if has_update and cls.RUNNING:
+                cls.update()
 
     @classmethod
     def new_event(cls, func_name, *args, **kwargs):
@@ -282,10 +308,14 @@ class CursedApp(object):
         self.scr = None
         self.menu = None
         self.threads = []
+        self.windows = None
 
     def run_windows(self):
-        for cw in CursedWindowClass.WINDOWS:
-            cw.new_event('run')
+        self.windows = CursedWindowClass.WINDOWS
+        self.active_window = None
+        for i, cw in enumerate(self.windows):
+            if hasattr(cw, 'init') and callable(cw.init):
+                cw.new_event('init')
             self.threads += [gevent.spawn(cw._cw_run, self, self.window)]
 
     def run(self):
@@ -296,6 +326,7 @@ class CursedApp(object):
             curses.cbreak()
             self.window = self.scr.subwin(0, 0)
             self.window.keypad(1)
+            self.window.nodelay(1)
             self.run_windows()
             gevent.joinall(self.threads)
         except KeyboardInterrupt:
