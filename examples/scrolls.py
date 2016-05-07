@@ -25,7 +25,7 @@ class FooterWindow(CursedWindow):
 
     @classmethod
     def init(cls):
-        cls.write('Press ESCAPE to exit')
+        cls.addstr('Press ESCAPE to exit')
         cls.refresh()
         cls.trigger('quit')
 
