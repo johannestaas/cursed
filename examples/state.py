@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import re
 from datetime import datetime
 from cursed import CursedApp, CursedWindow
 import requests
@@ -26,7 +25,7 @@ def my_mem():
 
 
 class MainWindow(CursedWindow):
-    WIDTH = 60
+    HEIGHT = 23
     BORDERED = True
 
     @classmethod
@@ -45,26 +44,15 @@ class MainWindow(CursedWindow):
         cls.refresh()
 
 
-class SideWindow(CursedWindow):
-    WIDTH = 20
-    X = 60
-    BORDERED = True
+class BottomMessage(CursedWindow):
+    Y = 23
+    BORDERED = False
 
     @classmethod
     def init(cls):
-        cls.addstr('foo', 0, 0)
-        cls.addstr('bar', x=0, y=1)
-        w, h = cls.getwh()
-        cls.nextline()
-        cls.addstr(str(w))
+        cls.addstr('Press ESCAPE to quit')
         cls.refresh()
-
-    @classmethod
-    def update(cls):
-        c = cls.getch()
-        if c == 27:
-            cls.new_event('quit')
-            return
+        cls.new_event('quit')
 
 
 result = app.run()
