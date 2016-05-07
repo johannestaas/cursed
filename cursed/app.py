@@ -5,6 +5,9 @@ import curses
 import gevent
 
 
+BASE_CURSED_CLASSES = ('CursedWindowClass', 'CursedWindow', 'CursedMenu')
+
+
 class CursedError(RuntimeError):
     pass
 
@@ -15,7 +18,7 @@ class CursedWindowClass(type):
 
     def __new__(cls, name, parents, dct):
         new = super(CursedWindowClass, cls).__new__(cls, name, parents, dct)
-        if name in ('CursedWindowClass', 'CursedWindow'):
+        if name in BASE_CURSED_CLASSES:
             return new
         new.WIDTH = dct.get('WIDTH', 80)
         new.HEIGHT = dct.get('HEIGHT', 24)
@@ -28,6 +31,7 @@ class CursedWindowClass(type):
         new.RESULTS = Queue()
         new.KEY_EVENTS = Queue()
         new.SCROLL = dct.get('SCROLL', False)
+        new.WAIT = dct.get('WAIT', True)
         cls.WINDOWS += [new]
         return new
 
@@ -377,7 +381,7 @@ class CursedApp(object):
                         cw.RUNNING = False
                     self.running = False
                     break
-                if cw.RUNNING:
+                if cw.RUNNING and cw.WAIT:
                     break
             else:
                 self.running = False
@@ -415,3 +419,21 @@ class CursedApp(object):
             curses.nocbreak()
             curses.endwin()
         return result
+
+
+class CursedMenu(CursedWindow):
+    HEIGHT = 1
+    ITEMS = ()
+    WAIT = False
+
+    @classmethod
+    def init(cls):
+        for c, word in cls.ITEMS:
+            cls.addstr(word, attr=curses.A_BOLD)
+            cls.addstr(' | ')
+
+    @classmethod
+    def update(cls):
+        c = cls.getch()
+        if c is not None and chr(c) in dict(cls.ITEMS):
+            cls.trigger(dict(cls.ITEMS)[chr(c)])

@@ -2,4 +2,4 @@
 
 Simplified curses
 '''
-from cursed.app import CursedApp, CursedWindow
+from cursed.app import CursedApp, CursedWindow, CursedMenu
