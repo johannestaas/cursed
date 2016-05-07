@@ -310,9 +310,11 @@ class Result(object):
 
     def __init__(self):
         self.exc_type, self.exc, self.tb = None, None, None
+        self.threads = None
 
-    def _extract_exception(self):
+    def _extract_exception(self, threads=None):
         self.exc_type, self.exc, self.tb = sys.exc_info()
+        self.threads = threads
 
     def unwrap(self):
         if self.exc:
@@ -385,7 +387,7 @@ class CursedApp(object):
             self.threads += [gevent.spawn(self.input_loop)]
             gevent.joinall(self.threads)
         except KeyboardInterrupt:
-            result._extract_exception()
+            result._extract_exception(threads=self.threads)
         except Exception:
             result._extract_exception()
         finally:
