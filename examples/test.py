@@ -10,7 +10,7 @@ class MainWindow(CursedWindow):
 
     @classmethod
     def update(cls):
-        c = cls.getlchar()
+        c = cls.getlkey()
         if c is None:
             return
         if c == 'q':
@@ -38,7 +38,7 @@ class SideWindow(CursedWindow):
 
     @classmethod
     def update(cls):
-        c = cls.getlchar()
+        c = cls.getlkey()
         if c is None:
             return
         if c == 'q':

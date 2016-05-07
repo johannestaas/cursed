@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+from Queue import Queue
 import curses
 import gevent
 
@@ -19,8 +20,9 @@ class CursedWindowClass(type):
         new.X = dct.get('X', 0)
         new.Y = dct.get('Y', 0)
         new.BORDERED = dct.get('BORDERED', False)
-        new.EVENTS = []
-        new.RESULTS = []
+        new.EVENTS = Queue()
+        new.RESULTS = Queue()
+        new.KEY_EVENTS = Queue()
         cls.WINDOWS += [new]
         return new
 
@@ -41,29 +43,24 @@ class CursedWindow(object):
     )
 
     @classmethod
-    def getchar(cls):
-        char = cls.getch()
-        if char is None:
+    def getlkey(cls):
+        key = cls.getkey()
+        if key is None:
             return None
-        return chr(char)
-
-    @classmethod
-    def getlchar(cls):
-        char = cls.getchar()
-        if char is None:
-            return None
-        return char.lower()
+        return key.lower()
 
     @classmethod
     def getch(cls):
-        char = cls.APP.window.getch()
-        if char == -1:
+        if cls.KEY_EVENTS.empty():
             return None
-        return char
+        return cls.KEY_EVENTS.get()
 
     @classmethod
     def getkey(cls):
-        return cls.APP.window.getkey()
+        if cls.KEY_EVENTS.empty():
+            return None
+        nchar = cls.KEY_EVENTS.get()
+        return chr(nchar)
 
     @classmethod
     def addch(cls, c, x=None, y=None, attr=None):
@@ -264,22 +261,21 @@ class CursedWindow(object):
             gevent.sleep(0)
             if not cls.RUNNING:
                 continue
-            i = len(cls.EVENTS)
-            for func_name, args, kwargs in cls.EVENTS[:i]:
+            while not cls.EVENTS.empty():
+                func_name, args, kwargs = cls.EVENTS.get()
                 if func_name == 'quit':
                     cls.RUNNING = False
                     break
                 func = getattr(cls, func_name)
-                cls.RESULTS += [
+                cls.RESULTS.put(
                     (func_name, args, kwargs, func(*args, **kwargs))
-                ]
-            cls.EVENTS = cls.EVENTS[i:]
+                )
             if has_update and cls.RUNNING:
                 cls.update()
 
     @classmethod
     def new_event(cls, func_name, *args, **kwargs):
-        cls.EVENTS += [(func_name, args, kwargs)]
+        cls.EVENTS.put((func_name, args, kwargs))
 
 
 class Result(object):
@@ -323,6 +319,7 @@ class CursedApp(object):
         self.menu = None
         self.threads = []
         self.windows = None
+        self.running = True
 
     def run_windows(self):
         self.windows = CursedWindowClass.WINDOWS
@@ -331,6 +328,21 @@ class CursedApp(object):
             if hasattr(cw, 'init') and callable(cw.init):
                 cw.new_event('init')
             self.threads += [gevent.spawn(cw._cw_run, self, self.window)]
+
+    def input_loop(self):
+        while self.running:
+            for cw in self.windows:
+                if cw.RUNNING:
+                    break
+            else:
+                self.running = False
+                break
+            gevent.sleep(0)
+            c = self.window.getch()
+            if c == -1:
+                continue
+            for cw in self.windows:
+                cw.KEY_EVENTS.put(c)
 
     def run(self):
         result = Result()
@@ -342,6 +354,7 @@ class CursedApp(object):
             self.window.keypad(1)
             self.window.nodelay(1)
             self.run_windows()
+            self.threads += [gevent.spawn(self.input_loop)]
             gevent.joinall(self.threads)
         except KeyboardInterrupt:
             result._extract_exception()
