@@ -23,6 +23,7 @@ class CursedWindowClass(type):
         new.EVENTS = Queue()
         new.RESULTS = Queue()
         new.KEY_EVENTS = Queue()
+        new.SCROLL = dct.get('SCROLL', False)
         cls.WINDOWS += [new]
         return new
 
@@ -133,7 +134,20 @@ class CursedWindow(object):
         if cr:
             x = 0
         x, y = cls._fix_xy(x, y)
-        cls.WINDOW.move(y + 1, x)
+        if y + 1 == cls.HEIGHT:
+            if cls.SCROLL:
+                cls.WINDOW.scroll()
+                cls.WINDOW.move(y, 0)
+            else:
+                raise RuntimeError('Window %s reached height at %d' % (
+                    cls.__name__, y + 1))
+        else:
+            cls.WINDOW.move(y + 1, x)
+
+    @classmethod
+    def write(cls, msg):
+        cls.addstr(str(msg))
+        cls.nextline()
 
     @classmethod
     def _fix_xy(cls, x, y):
@@ -244,6 +258,9 @@ class CursedWindow(object):
         cls.RUNNING = True
         cls.APP = app
         cls.WINDOW = window.subwin(cls.HEIGHT, cls.WIDTH, cls.Y, cls.X)
+        if cls.SCROLL:
+            cls.WINDOW.scrollok(True)
+            cls.WINDOW.idlok(1)
         if cls.BORDERED:
             cls.WINDOW.border()
         for attr in cls._CW_WINDOW_FUNCS:
