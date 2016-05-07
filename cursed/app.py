@@ -357,11 +357,18 @@ class CursedApp(object):
         for i, cw in enumerate(self.windows):
             if hasattr(cw, 'init') and callable(cw.init):
                 cw.trigger('init')
-            self.threads += [gevent.spawn(cw._cw_run, self, self.window)]
+            thread = gevent.spawn(cw._cw_run, self, self.window)
+            cw.THREAD = thread
+            self.threads += [thread]
 
     def input_loop(self):
         while self.running:
             for cw in self.windows:
+                if cw.THREAD.exception is not None:
+                    for cw in self.windows:
+                        cw.RUNNING = False
+                    self.running = False
+                    break
                 if cw.RUNNING:
                     break
             else:
@@ -386,6 +393,9 @@ class CursedApp(object):
             self.run_windows()
             self.threads += [gevent.spawn(self.input_loop)]
             gevent.joinall(self.threads)
+            for thread in self.threads:
+                if thread.exception:
+                    raise thread.exception
         except KeyboardInterrupt:
             result._extract_exception(threads=self.threads)
         except Exception:
