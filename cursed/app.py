@@ -5,6 +5,10 @@ import curses
 import gevent
 
 
+class CursedError(RuntimeError):
+    pass
+
+
 class CursedWindowClass(type):
 
     WINDOWS = []
@@ -139,7 +143,7 @@ class CursedWindow(object):
                 cls.WINDOW.scroll()
                 cls.WINDOW.move(y, 0)
             else:
-                raise RuntimeError('Window %s reached height at %d' % (
+                raise CursedError('Window %s reached height at %d' % (
                     cls.__name__, y + 1))
         else:
             cls.WINDOW.move(y + 1, x)
@@ -276,14 +280,21 @@ class CursedWindow(object):
         while cls.RUNNING:
             # Yield to others for a bit
             gevent.sleep(0)
-            if not cls.RUNNING:
-                continue
             while not cls.EVENTS.empty():
                 func_name, args, kwargs = cls.EVENTS.get()
                 if func_name == 'quit':
+                    if hasattr(cls, 'quit') and callable(cls.quit):
+                        result = cls.quit(*args, **kwargs)
+                        cls.RESULTS.put(('quit', args, kwargs, result))
                     cls.RUNNING = False
                     break
+                if not hasattr(cls, func_name):
+                    raise CursedError('%s has no function %s' % (cls.__name__,
+                                                                 func_name))
                 func = getattr(cls, func_name)
+                if not callable(func):
+                    raise CursedError('%s has no callable %s' % (cls.__name__,
+                                                                 func_name))
                 cls.RESULTS.put(
                     (func_name, args, kwargs, func(*args, **kwargs))
                 )

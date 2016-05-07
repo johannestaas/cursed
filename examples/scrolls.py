@@ -4,7 +4,7 @@ app = CursedApp()
 
 
 class ScrollingWindow(CursedWindow):
-    HEIGHT = 24
+    HEIGHT = 23
     SCROLL = True
     i = 0
 
@@ -17,6 +17,17 @@ class ScrollingWindow(CursedWindow):
         cls.write(cls.i)
         cls.i += 1
         cls.refresh()
+
+
+class FooterWindow(CursedWindow):
+    HEIGHT = 1
+    Y = 23
+
+    @classmethod
+    def init(cls):
+        cls.write('Press ESCAPE to exit')
+        cls.refresh()
+        cls.trigger('quit')
 
 
 result = app.run()
