@@ -274,7 +274,7 @@ class CursedWindow(object):
                 cls.update()
 
     @classmethod
-    def new_event(cls, func_name, *args, **kwargs):
+    def trigger(cls, func_name, *args, **kwargs):
         cls.EVENTS.put((func_name, args, kwargs))
 
 
@@ -326,7 +326,7 @@ class CursedApp(object):
         self.active_window = None
         for i, cw in enumerate(self.windows):
             if hasattr(cw, 'init') and callable(cw.init):
-                cw.new_event('init')
+                cw.trigger('init')
             self.threads += [gevent.spawn(cw._cw_run, self, self.window)]
 
     def input_loop(self):

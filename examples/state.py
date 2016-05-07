@@ -34,7 +34,7 @@ class MainWindow(CursedWindow):
         cls.border()
         c = cls.getch()
         if c == 27:
-            cls.new_event('quit')
+            cls.trigger('quit')
             return
         cls.addstr('My IP: %s' % my_ip(), 0, 0)
         cls.nextline()
@@ -52,7 +52,7 @@ class BottomMessage(CursedWindow):
     def init(cls):
         cls.addstr('Press ESCAPE to quit')
         cls.refresh()
-        cls.new_event('quit')
+        cls.trigger('quit')
 
 
 result = app.run()

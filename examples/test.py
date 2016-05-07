@@ -14,7 +14,7 @@ class MainWindow(CursedWindow):
         if c is None:
             return
         if c == 'q':
-            cls.new_event('quit')
+            cls.trigger('quit')
             return
         cls.addstr(c * 10, x=0, y=0)
         cls.nextline()
@@ -42,7 +42,7 @@ class SideWindow(CursedWindow):
         if c is None:
             return
         if c == 'q':
-            cls.new_event('quit')
+            cls.trigger('quit')
 
 
 result = app.run()
