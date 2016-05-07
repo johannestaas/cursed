@@ -258,7 +258,7 @@ class CursedWindow(object):
         cls.move(x, val)
 
     @classmethod
-    def _cw_run(cls, app, window):
+    def _cw_setup_run(cls, app, window):
         cls.RUNNING = True
         cls.APP = app
         cls.WINDOW = window.subwin(cls.HEIGHT, cls.WIDTH, cls.Y, cls.X)
@@ -276,28 +276,38 @@ class CursedWindow(object):
         for attr in cls._CW_SCREEN_SWAP_FUNCS:
             cls._cw_swap_screen_func(attr)
         cls.WINDOW.refresh()
+
+    @classmethod
+    def _cw_handle_events(cls):
+        while not cls.EVENTS.empty():
+            func_name, args, kwargs = cls.EVENTS.get()
+            if func_name == 'quit':
+                if hasattr(cls, 'quit') and callable(cls.quit):
+                    result = cls.quit(*args, **kwargs)
+                    cls.RESULTS.put(('quit', args, kwargs, result))
+                cls.RUNNING = False
+                break
+            if not hasattr(cls, func_name):
+                raise CursedError('%s has no function %s' % (cls.__name__,
+                                                             func_name))
+            func = getattr(cls, func_name)
+            if not callable(func):
+                raise CursedError('%s has no callable %s' % (cls.__name__,
+                                                             func_name))
+            cls.RESULTS.put(
+                (func_name, args, kwargs, func(*args, **kwargs))
+            )
+
+    @classmethod
+    def _cw_run(cls, app, window):
+        cls._cw_setup_run(app, window)
         has_update = hasattr(cls, 'update') and callable(cls.update)
+        if hasattr(cls, 'init') and callable(cls.init):
+            cls.trigger('init')
         while cls.RUNNING:
             # Yield to others for a bit
             gevent.sleep(0)
-            while not cls.EVENTS.empty():
-                func_name, args, kwargs = cls.EVENTS.get()
-                if func_name == 'quit':
-                    if hasattr(cls, 'quit') and callable(cls.quit):
-                        result = cls.quit(*args, **kwargs)
-                        cls.RESULTS.put(('quit', args, kwargs, result))
-                    cls.RUNNING = False
-                    break
-                if not hasattr(cls, func_name):
-                    raise CursedError('%s has no function %s' % (cls.__name__,
-                                                                 func_name))
-                func = getattr(cls, func_name)
-                if not callable(func):
-                    raise CursedError('%s has no callable %s' % (cls.__name__,
-                                                                 func_name))
-                cls.RESULTS.put(
-                    (func_name, args, kwargs, func(*args, **kwargs))
-                )
+            cls._cw_handle_events()
             if has_update and cls.RUNNING:
                 cls.update()
 
@@ -355,8 +365,6 @@ class CursedApp(object):
         self.windows = CursedWindowClass.WINDOWS
         self.active_window = None
         for i, cw in enumerate(self.windows):
-            if hasattr(cw, 'init') and callable(cw.init):
-                cw.trigger('init')
             thread = gevent.spawn(cw._cw_run, self, self.window)
             cw.THREAD = thread
             self.threads += [thread]
