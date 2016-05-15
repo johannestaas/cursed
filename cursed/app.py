@@ -425,15 +425,41 @@ class CursedMenu(CursedWindow):
     HEIGHT = 1
     ITEMS = ()
     WAIT = False
+    KEYMAP = {}
+    OPENED_MENU = None
 
     @classmethod
     def init(cls):
-        for c, word in cls.ITEMS:
-            cls.addstr(word, attr=curses.A_BOLD)
-            cls.addstr(' | ')
+        for key, name, items in cls.ITEMS:
+            key_d = {}
+            cls.KEYMAP[key] = key_d
+            for key2, name2, func_name in items:
+                key_d[key2] = func_name
+
+    @classmethod
+    def _display(cls, key=None):
+        l = 0
+        set_menu = None
+        for ikey, name, items in cls.ITEMS:
+            cls.addstr(name, attr=curses.A_BOLD)
+            cls.addstr(' ')
+            if key is not None and key == ikey:
+                set_menu = ikey
+                for item_key, item_name, item_func in items:
+                    cls.cx = l
+                    cls.cy += 1
+                    cls.addstr(item_name)
+            l += len(name) + 1
 
     @classmethod
     def update(cls):
         c = cls.getch()
-        if c is not None and chr(c) in dict(cls.ITEMS):
-            cls.trigger(dict(cls.ITEMS)[chr(c)])
+        if c is None:
+            continue
+        if cls.OPENED_MENU is None:
+            if chr(c) in cls.KEYMAP:
+                cls._display(key=chr(c))
+                cls.OPENED_MENU
+        else:
+            attr = cls.OPENED_MENU.get(chr(c))
+            if attr is not None:

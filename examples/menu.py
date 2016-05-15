@@ -4,24 +4,50 @@ app = CursedApp()
 
 
 class Menu(CursedMenu):
+    # Tuple of menus
+    # First tuple is a 2-tuple of (letter, name) of the menu
+    # Next few is 3-tuple of (letter, name, function_name)
     ITEMS = (
-        ('f', 'file'),
-        ('e', 'edit'),
-        ('q', 'quitit'),
+        (
+            ('f', 'File'),
+            ('s', 'Save', 'save'),
+            ('q', 'Quit', 'quit'),
+        ),
+        (
+            ('e', 'Edit'),
+            ('c', 'Copy', 'copy'),
+            ('p', 'Paste', 'paste'),
+        ),
+        (
+            ('t', 'Test'),
+            ('T', 'Test2', 'test2'),
+            ('3', 'Three', 'three'),
+        ),
     )
 
     @classmethod
-    def file(cls):
-        MainWindow.write('Pressed f for file!')
+    def save(cls):
+        MainWindow.write('File->Save')
 
     @classmethod
-    def edit(cls):
-        MainWindow.write('Pressed e for edit!')
+    def quit(cls):
+        MainWindow.write('Quitting')
 
     @classmethod
-    def quitit(cls):
-        cls.trigger('quit')
-        MainWindow.trigger('quit')
+    def copy(cls):
+        MainWindow.write('edit->copy')
+
+    @classmethod
+    def paste(cls):
+        MainWindow.write('edit->paste')
+
+    @classmethod
+    def test2(cls):
+        MainWindow.write('test->test2')
+
+    @classmethod
+    def three(cls):
+        MainWindow.write('test->three')
 
 
 class MainWindow(CursedWindow):
@@ -30,14 +56,6 @@ class MainWindow(CursedWindow):
     SCROLL = True
     i = 0
 
-    @classmethod
-    def update(cls):
-        c = cls.getch()
-        if c == 27:
-            cls.trigger('quit')
-            return
-        cls.refresh()
-
 
 class FooterWindow(CursedWindow):
     HEIGHT = 1
@@ -45,7 +63,7 @@ class FooterWindow(CursedWindow):
 
     @classmethod
     def init(cls):
-        cls.addstr('Press ESCAPE to exit')
+        cls.addstr('Press f then q to exit')
         cls.refresh()
         cls.trigger('quit')
 
