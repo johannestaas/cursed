@@ -9,6 +9,14 @@ import gevent
 BASE_CURSED_CLASSES = ('CursedWindowClass', 'CursedWindow', 'CursedMenu')
 
 
+def _debug(s):
+    '''
+    It's pretty hard to debug with all the threads running updates constantly...
+    '''
+    with open('debug.log', 'a') as f:
+        f.write(s + '\n')
+
+
 class CursedError(ValueError):
     pass
 
@@ -318,23 +326,19 @@ class CursedWindow(object):
 
     @classmethod
     def _cw_menu_display(cls):
-        l = 0
+        x = 0
+        y = 0
         saved_pos = (cls.cx, cls.cy)
         for mkey, title, menu in cls.MENU.menus:
-            cls.cx = l
-            cls.cy = 0
-            with open('debug', 'a') as f:
-                f.write('%s %d %d %s\n' % (cls.__name__, cls.cx, cls.cy, title))
-            cls.addstr(title + '  ', attr=curses.A_BOLD)
+            cls.addstr(title + '  ', x, y, attr=curses.A_BOLD)
             if cls._OPENED_MENU and cls._OPENED_MENU[0] == title:
                 for name, key, cb in menu:
-                    cls.cx = l
-                    cls.cy += 1
+                    y += 1
                     s = name
                     if key:
                         s = '{} - {}'.format(name, key)
-                    cls.addstr(s)
-            l += len(title) + 2
+                    cls.addstr(s, x, y)
+            x += len(title) + 2
         cls.cx, cls.cy = saved_pos
 
     @classmethod
@@ -347,13 +351,14 @@ class CursedWindow(object):
             return
         if cls._OPENED_MENU is None:
             if chr(c) in cls._KEYMAP:
-                cls._cw_menu_display()
                 cls._OPENED_MENU = cls._KEYMAP[chr(c)]
         else:
             cb = cls._OPENED_MENU[1].get(chr(c))
-            if cb is not None:
-                func = getattr(cls, cb)
-                func()
+            if cb:
+                if hasattr(cls, cb):
+                    getattr(cls, cb)()
+                if cb == 'quit':
+                    cls.trigger('quit')
 
     @classmethod
     def _cw_run(cls, app, window):
