@@ -311,7 +311,6 @@ class CursedWindow(object):
             cls._cw_swap_window_func(attr)
         for attr in cls._CW_SCREEN_SWAP_FUNCS:
             cls._cw_swap_screen_func(attr)
-        cls.WINDOW.refresh()
 
     @classmethod
     def redraw(cls):
@@ -409,6 +408,7 @@ class CursedWindow(object):
         cls._cw_setup_run(app, window)
         if cls.MENU:
             cls._cw_setup_menu()
+        cls.redraw()
         has_update = hasattr(cls, 'update') and callable(cls.update)
         if hasattr(cls, 'init') and callable(cls.init):
             cls.trigger('init')
