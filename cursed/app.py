@@ -330,7 +330,6 @@ class Result(object):
         self.exc_type, self.exc, self.tb = sys.exc_info()
 
     def _extract_thread_exception(self, thread):
-        exc = thread.exception
         self.exc_type, self.exc, self.tb = thread.exc_info
 
     def unwrap(self):
@@ -478,11 +477,12 @@ class CursedMenu(CursedWindow):
     def _display(cls):
         l = 0
         for mkey, title, menu in cls.MENU.menus:
-            cls.cy = 0
             cls.cx = l
-            cls.addstr(title, attr=curses.A_BOLD)
-            cls.addstr('  ')
-            if cls.OPENED_MENU[0] == title:
+            cls.cy = 0
+            with open('debug', 'a') as f:
+                f.write('%d %d %s\n' % (cls.cx, cls.cy, title))
+            cls.addstr(title + '  ', attr=curses.A_BOLD)
+            if cls.OPENED_MENU and cls.OPENED_MENU[0] == title:
                 for name, key, cb in menu:
                     cls.cx = l
                     cls.cy += 1
@@ -494,8 +494,11 @@ class CursedMenu(CursedWindow):
 
     @classmethod
     def update(cls):
+        cls._display()
         c = cls.getch()
         if c is None:
+            return
+        if not (0 < c < 256):
             return
         if cls.OPENED_MENU is None:
             if chr(c) in cls.KEYMAP:

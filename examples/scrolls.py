@@ -34,7 +34,5 @@ result = app.run()
 print(result)
 if result.interrupted():
     print('Ctrl-C pressed.')
-    if result.threads is not None:
-        print('Threads: %s' % ' || '.join(str(x) for x in result.threads))
 else:
     result.unwrap()
