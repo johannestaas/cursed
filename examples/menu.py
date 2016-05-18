@@ -6,8 +6,6 @@ app = CursedApp()
 class MainWindow(CursedWindow):
     WIDTH = 100
     HEIGHT = 23
-    BORDERED = True
-    # SCROLL = True
 
     MENU = CursedMenu()
     MENU.add_menu('File', 'f')

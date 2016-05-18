@@ -393,15 +393,12 @@ class CursedWindow(object):
                 cls._OPENED_MENU = cls._KEYMAP[chr(c)]
                 cls.redraw()
         else:
-            if c == 27:
-                cls._OPENED_MENU = None
-            else:
-                cb = cls._OPENED_MENU[1].get(chr(c))
-                cls._OPENED_MENU = None
-                if cb:
-                    # Run callback associated with menu item
-                    cls.trigger(cb)
+            cb = cls._OPENED_MENU[1].get(chr(c))
+            cls._OPENED_MENU = None
             cls.redraw()
+            if cb:
+                # Run callback associated with menu item
+                cls.trigger(cb)
 
     @classmethod
     def _cw_run(cls, app, window):
