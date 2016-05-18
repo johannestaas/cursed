@@ -33,6 +33,9 @@ class CursedWindowClass(type):
         new.KEY_EVENTS = Queue()
         new.SCROLL = dct.get('SCROLL', False)
         new.WAIT = dct.get('WAIT', True)
+        new.MENU = dct.get('MENU', None)
+        new._KEYMAP = {}
+        new._OPENED_MENU = None
         cls.WINDOWS += [new]
         return new
 
@@ -165,7 +168,8 @@ class CursedWindow(object):
             x = x0 if x is None else x
             y = y0 if y is None else y
         if cls.BORDERED:
-            return x + 1, y + 1
+            x += 1
+            y += 1
         return x, y
 
     @classmethod
@@ -304,8 +308,58 @@ class CursedWindow(object):
             )
 
     @classmethod
+    def _cw_setup_menu(cls):
+        for mkey, title, menu in cls.MENU.menus:
+            key_d = {}
+            cls._KEYMAP[mkey] = (title, key_d)
+            for name, key, cb in menu:
+                if key:
+                    key_d[key] = cb
+
+    @classmethod
+    def _cw_menu_display(cls):
+        l = 0
+        saved_pos = (cls.cx, cls.cy)
+        for mkey, title, menu in cls.MENU.menus:
+            cls.cx = l
+            cls.cy = 0
+            with open('debug', 'a') as f:
+                f.write('%s %d %d %s\n' % (cls.__name__, cls.cx, cls.cy, title))
+            cls.addstr(title + '  ', attr=curses.A_BOLD)
+            if cls._OPENED_MENU and cls._OPENED_MENU[0] == title:
+                for name, key, cb in menu:
+                    cls.cx = l
+                    cls.cy += 1
+                    s = name
+                    if key:
+                        s = '{} - {}'.format(name, key)
+                    cls.addstr(s)
+            l += len(title) + 2
+        cls.cx, cls.cy = saved_pos
+
+    @classmethod
+    def _cw_menu_update(cls):
+        cls._cw_menu_display()
+        c = cls.getch()
+        if c is None:
+            return
+        if not (0 < c < 256):
+            return
+        if cls._OPENED_MENU is None:
+            if chr(c) in cls._KEYMAP:
+                cls._cw_menu_display()
+                cls._OPENED_MENU = cls._KEYMAP[chr(c)]
+        else:
+            cb = cls._OPENED_MENU[1].get(chr(c))
+            if cb is not None:
+                func = getattr(cls, cb)
+                func()
+
+    @classmethod
     def _cw_run(cls, app, window):
         cls._cw_setup_run(app, window)
+        if cls.MENU:
+            cls._cw_setup_menu()
         has_update = hasattr(cls, 'update') and callable(cls.update)
         if hasattr(cls, 'init') and callable(cls.init):
             cls.trigger('init')
@@ -315,6 +369,8 @@ class CursedWindow(object):
             cls._cw_handle_events()
             if has_update and cls.RUNNING:
                 cls.update()
+            if cls.MENU and cls.RUNNING:
+                cls._cw_menu_update()
 
     @classmethod
     def trigger(cls, func_name, *args, **kwargs):
@@ -423,7 +479,7 @@ class CursedApp(object):
         return result
 
 
-class CursedMenuBar(object):
+class CursedMenu(object):
 
     def __init__(self):
         self.menus = []
@@ -455,57 +511,3 @@ class CursedMenuBar(object):
             if not name:
                 raise CursedError('Menu item must have a name.')
             menu += [(name, key, cb)]
-
-
-class CursedMenu(CursedWindow):
-    HEIGHT = 1
-    MENU = None
-    WAIT = False
-    KEYMAP = {}
-    OPENED_MENU = None
-
-    @classmethod
-    def init(cls):
-        for mkey, title, menu in cls.MENU.menus:
-            key_d = {}
-            cls.KEYMAP[mkey] = (title, key_d)
-            for name, key, cb in menu:
-                if key:
-                    key_d[key] = cb
-
-    @classmethod
-    def _display(cls):
-        l = 0
-        for mkey, title, menu in cls.MENU.menus:
-            cls.cx = l
-            cls.cy = 0
-            with open('debug', 'a') as f:
-                f.write('%d %d %s\n' % (cls.cx, cls.cy, title))
-            cls.addstr(title + '  ', attr=curses.A_BOLD)
-            if cls.OPENED_MENU and cls.OPENED_MENU[0] == title:
-                for name, key, cb in menu:
-                    cls.cx = l
-                    cls.cy += 1
-                    s = name
-                    if key:
-                        s = '{} - {}'.format(name, key)
-                    cls.addstr(s)
-            l += len(title) + 2
-
-    @classmethod
-    def update(cls):
-        cls._display()
-        c = cls.getch()
-        if c is None:
-            return
-        if not (0 < c < 256):
-            return
-        if cls.OPENED_MENU is None:
-            if chr(c) in cls.KEYMAP:
-                cls._display()
-                cls.OPENED_MENU = cls.KEYMAP[chr(c)]
-        else:
-            cb = cls.OPENED_MENU[1].get(chr(c))
-            if cb is not None:
-                func = getattr(cls, cb)
-                func()

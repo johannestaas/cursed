@@ -1,13 +1,14 @@
 #!/usr/bin/env python
-from cursed import CursedApp, CursedWindow, CursedMenu, CursedMenuBar
+from cursed import CursedApp, CursedWindow, CursedMenu
 app = CursedApp()
 
 
-class Menu(CursedMenu):
-    # Tuple of menus
-    # First tuple is a 2-tuple of (letter, name) of the menu
-    # Next few is 3-tuple of (letter, name, function_name)
-    MENU = CursedMenuBar()
+class MainWindow(CursedWindow):
+    HEIGHT = 22
+    SCROLL = True
+    i = 0
+
+    MENU = CursedMenu()
     MENU.add_menu('File', 'f')
     MENU.add_items(
         ('Save', 's', 'save'),
@@ -39,13 +40,6 @@ class Menu(CursedMenu):
     @classmethod
     def delete(cls):
         MainWindow.write('edit->delete')
-
-
-class MainWindow(CursedWindow):
-    Y = 1
-    HEIGHT = 22
-    SCROLL = True
-    i = 0
 
 
 class FooterWindow(CursedWindow):
