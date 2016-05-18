@@ -85,6 +85,7 @@ class CursedWindow(object):
 
     @classmethod
     def addch(cls, c, x=None, y=None, attr=None):
+        attr = cls._fix_attr(attr)
         x, y = cls._fix_xy(x, y)
         if isinstance(c, int):
             c = chr(c)
@@ -118,6 +119,7 @@ class CursedWindow(object):
     @classmethod
     def insch(cls, ch, x=None, y=None, attr=None):
         x, y = cls._fix_xy(x, y)
+        attr = cls._fix_attr(attr)
         if attr is None:
             return cls.WINDOW.insch(y, x, ch)
         else:
@@ -134,6 +136,7 @@ class CursedWindow(object):
     @classmethod
     def insstr(cls, s, x=None, y=None, attr=None):
         x, y = cls._fix_xy(x, y)
+        attr = cls._fix_attr(attr)
         if attr is None:
             return cls.WINDOW.insstr(y, x, s)
         else:
@@ -142,6 +145,7 @@ class CursedWindow(object):
     @classmethod
     def insnstr(cls, s, x=None, y=None, n=None, attr=None):
         x, y = cls._fix_xy(x, y)
+        attr = cls._fix_attr(attr)
         n = n if n is not None else cls.WIDTH
         if attr is None:
             return cls.WINDOW.insnstr(y, x, s, n)
@@ -183,8 +187,15 @@ class CursedWindow(object):
         return x, y
 
     @classmethod
+    def _fix_attr(cls, attr):
+        if isinstance(attr, basestring):
+            return getattr(curses, 'A_%s' % attr.upper())
+        return attr
+
+    @classmethod
     def addstr(cls, s, x=None, y=None, attr=None):
         x, y = cls._fix_xy(x, y)
+        attr = cls._fix_attr(attr)
         if attr is None:
             return cls.WINDOW.addstr(y, x, s)
         else:
@@ -193,6 +204,7 @@ class CursedWindow(object):
     @classmethod
     def addnstr(cls, s, x=None, y=None, n=None, attr=None):
         x, y = cls._fix_xy(x, y)
+        attr = cls._fix_attr(attr)
         n = cls.WIDTH if n is None else n
         if attr is None:
             return cls.WINDOW.addnstr(y, x, s, n)

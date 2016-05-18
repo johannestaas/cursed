@@ -16,7 +16,7 @@ class MainWindow(CursedWindow):
         if c == 'q':
             cls.trigger('quit')
             return
-        cls.addstr(c * 10, x=0, y=0)
+        cls.addstr(c * 10, x=0, y=0, attr='reverse')
         cls.nextline()
         cls.hline(n=10)
         cls.refresh()
@@ -30,7 +30,7 @@ class SideWindow(CursedWindow):
     @classmethod
     def init(cls):
         cls.addstr('foo', 0, 0)
-        cls.addstr('bar', x=0, y=1)
+        cls.addstr('bar', x=0, y=1, attr='bold')
         w, h = cls.getwh()
         cls.nextline()
         cls.addstr(str(w))
