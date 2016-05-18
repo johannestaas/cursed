@@ -5,8 +5,7 @@ app = CursedApp()
 
 class MainWindow(CursedWindow):
     HEIGHT = 22
-    SCROLL = True
-    i = 0
+    # SCROLL = True
 
     MENU = CursedMenu()
     MENU.add_menu('File', 'f')
@@ -23,23 +22,28 @@ class MainWindow(CursedWindow):
 
     @classmethod
     def save(cls):
-        MainWindow.write('File->Save')
+        cls.addstr('File->Save')
 
     @classmethod
     def quit(cls):
-        MainWindow.write('Quitting')
+        cls.addstr('Quitting')
 
     @classmethod
     def copy(cls):
-        MainWindow.write('edit->copy')
+        cls.addstr('edit->copy')
 
     @classmethod
     def paste(cls):
-        MainWindow.write('edit->paste')
+        cls.addstr('edit->paste')
 
     @classmethod
     def delete(cls):
-        MainWindow.write('edit->delete')
+        cls.addstr('edit->delete')
+
+    @classmethod
+    def update(cls):
+        cls.cx = 10
+        cls.cy = 10
 
 
 class FooterWindow(CursedWindow):

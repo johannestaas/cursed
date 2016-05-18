@@ -178,6 +178,8 @@ class CursedWindow(object):
         if cls.BORDERED:
             x += 1
             y += 1
+        if cls.MENU:
+            y += 1
         return x, y
 
     @classmethod
@@ -327,18 +329,21 @@ class CursedWindow(object):
     @classmethod
     def _cw_menu_display(cls):
         x = 0
-        y = 0
+        y = -1
+        menu_attrs = curses.A_REVERSE | curses.A_BOLD
         saved_pos = (cls.cx, cls.cy)
         for mkey, title, menu in cls.MENU.menus:
-            cls.addstr(title + '  ', x, y, attr=curses.A_BOLD)
+            cls.addstr(title + '  ', x, y, attr=menu_attrs)
             if cls._OPENED_MENU and cls._OPENED_MENU[0] == title:
                 for name, key, cb in menu:
                     y += 1
-                    s = name
                     if key:
-                        s = '{} - {}'.format(name, key)
+                        s = '[{1}] {0}'.format(name, key)
+                    else:
+                        s = name
                     cls.addstr(s, x, y)
             x += len(title) + 2
+        cls.addstr(' ' * (cls.WIDTH - x), x, -1, attr=menu_attrs)
         cls.cx, cls.cy = saved_pos
 
     @classmethod
@@ -353,12 +358,13 @@ class CursedWindow(object):
             if chr(c) in cls._KEYMAP:
                 cls._OPENED_MENU = cls._KEYMAP[chr(c)]
         else:
-            cb = cls._OPENED_MENU[1].get(chr(c))
-            if cb:
-                if hasattr(cls, cb):
-                    getattr(cls, cb)()
-                if cb == 'quit':
-                    cls.trigger('quit')
+            if c == 27:
+                cls._OPENED_MENU = None
+            else:
+                cb = cls._OPENED_MENU[1].get(chr(c))
+                if cb:
+                    # Run callback associated with menu item
+                    cls.trigger(cb)
 
     @classmethod
     def _cw_run(cls, app, window):
@@ -462,6 +468,8 @@ class CursedApp(object):
             self.scr = curses.initscr()
             curses.noecho()
             curses.cbreak()
+            curses.start_color()
+            curses.use_default_colors()
             self.window = self.scr.subwin(0, 0)
             self.window.keypad(1)
             self.window.nodelay(1)
