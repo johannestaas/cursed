@@ -350,7 +350,9 @@ class CursedWindow(object):
                     cls.addstr(s, x, y)
             # For the empty space filler
             x += len(title) + 2
-        cls.addstr(' ' * (cls.WIDTH - x), x, -1, attr=menu_attrs)
+        # color the rest of the top of the window
+        extra = 2 if cls.BORDERED else 0
+        cls.addstr(' ' * (cls.WIDTH - x - extra), x, -1, attr=menu_attrs)
         cls.cx, cls.cy = saved_pos
 
     @classmethod

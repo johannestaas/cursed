@@ -4,7 +4,9 @@ app = CursedApp()
 
 
 class MainWindow(CursedWindow):
-    HEIGHT = 22
+    WIDTH = 100
+    HEIGHT = 23
+    BORDERED=True
     # SCROLL = True
 
     MENU = CursedMenu()
