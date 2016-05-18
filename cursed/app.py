@@ -52,7 +52,7 @@ class CursedWindow(object):
     __metaclass__ = CursedWindowClass
 
     _CW_WINDOW_SWAP_FUNCS = (
-        'mvwin', 'move',
+        'mvwin',
     )
     _CW_SCREEN_SWAP_FUNCS = (
     )
@@ -108,7 +108,10 @@ class CursedWindow(object):
     def getxy(cls):
         y, x = cls.WINDOW.getyx()
         if cls.BORDERED:
-            return x - 1, y - 1
+            x -= 1
+            y -= 1
+        if cls.MENU:
+            y -= 1
         return x, y
 
     @classmethod
@@ -175,15 +178,22 @@ class CursedWindow(object):
 
     @classmethod
     def _fix_xy(cls, x, y):
-        if x is None or y is None:
-            x0, y0 = cls.getxy()
-            x = x0 if x is None else x
-            y = y0 if y is None else y
+        y0, x0 = cls.WINDOW.getyx()
+        rawx, rawy = False, False
+        if x is None:
+            x = x0
+            rawx = True
+        if y is None:
+            y = y0
+            rawy = True
         if cls.BORDERED:
-            x += 1
-            y += 1
+            if not rawx:
+                x += 1
+            if not rawy:
+                y += 1
         if cls.MENU:
-            y += 1
+            if not rawy:
+                y += 1
         return x, y
 
     @classmethod
@@ -264,29 +274,24 @@ class CursedWindow(object):
     def app_set(cls, var, val):
         return setattr(cls.APP, var, val)
 
-    @property
     @classmethod
-    def cx(cls):
-        x, y = cls._fix_xy(*cls.get_xy())
-        return x
+    def cx(cls, *args):
+        x, y = cls.getxy()
+        if not args:
+            return x
+        return cls.move(args[0], y)
 
-    @property
     @classmethod
-    def cy(cls):
-        x, y = cls._fix_xy(*cls.get_xy())
-        return y
+    def cy(cls, *args):
+        x, y = cls.getxy()
+        if not args:
+            return y
+        return cls.move(x, args[0])
 
-    @cx.setter
     @classmethod
-    def cx(cls, val):
-        x, y = cls._fix_xy(*cls.get_xy())
-        cls.move(val, y)
-
-    @cy.setter
-    @classmethod
-    def cy(cls, val):
-        x, y = cls._fix_xy(*cls.get_xy())
-        cls.move(x, val)
+    def move(cls, x, y):
+        x, y = cls._fix_xy(x, y)
+        cls.WINDOW.move(y, x)
 
     @classmethod
     def _cw_setup_run(cls, app, window):
@@ -306,6 +311,15 @@ class CursedWindow(object):
             cls._cw_swap_window_func(attr)
         for attr in cls._CW_SCREEN_SWAP_FUNCS:
             cls._cw_swap_screen_func(attr)
+        cls.WINDOW.refresh()
+
+    @classmethod
+    def redraw(cls):
+        cls.erase()
+        if cls.BORDERED:
+            cls.WINDOW.border()
+        if cls.MENU:
+            cls._cw_menu_display()
         cls.WINDOW.refresh()
 
     @classmethod
@@ -345,12 +359,13 @@ class CursedWindow(object):
         y = -1
         # Makes the menu standout
         menu_attrs = curses.A_REVERSE | curses.A_BOLD
-        saved_pos = (cls.cx, cls.cy)
+        saved_pos = cls.getxy()
         for mkey, title, menu in cls.MENU.menus:
             # double check we're not going to write out of bounds
             if x + len(title) + 2 >= cls.WIDTH:
                 raise CursedError('Menu %s exceeds width of window: x=%d' % (
                     title, x))
+            y = -1
             cls.addstr(title + '  ', x, y, attr=menu_attrs)
             if cls._OPENED_MENU and cls._OPENED_MENU[0] == title:
                 for name, key, cb in menu:
@@ -359,17 +374,16 @@ class CursedWindow(object):
                         s = '[{1}] {0}'.format(name, key)
                     else:
                         s = name
-                    cls.addstr(s, x, y)
+                    cls.addstr(s, x, y, attr=curses.A_REVERSE)
             # For the empty space filler
             x += len(title) + 2
         # color the rest of the top of the window
         extra = 2 if cls.BORDERED else 0
         cls.addstr(' ' * (cls.WIDTH - x - extra), x, -1, attr=menu_attrs)
-        cls.cx, cls.cy = saved_pos
+        cls.move(*saved_pos)
 
     @classmethod
     def _cw_menu_update(cls):
-        cls._cw_menu_display()
         c = cls.getch()
         if c is None:
             return
@@ -378,14 +392,17 @@ class CursedWindow(object):
         if cls._OPENED_MENU is None:
             if chr(c) in cls._KEYMAP:
                 cls._OPENED_MENU = cls._KEYMAP[chr(c)]
+                cls.redraw()
         else:
             if c == 27:
                 cls._OPENED_MENU = None
             else:
                 cb = cls._OPENED_MENU[1].get(chr(c))
+                cls._OPENED_MENU = None
                 if cb:
                     # Run callback associated with menu item
                     cls.trigger(cb)
+            cls.redraw()
 
     @classmethod
     def _cw_run(cls, app, window):
@@ -398,11 +415,11 @@ class CursedWindow(object):
         while cls.RUNNING:
             # Yield to others for a bit
             gevent.sleep(0)
+            if cls.MENU and cls.RUNNING:
+                cls._cw_menu_update()
             cls._cw_handle_events()
             if has_update and cls.RUNNING:
                 cls.update()
-            if cls.MENU and cls.RUNNING:
-                cls._cw_menu_update()
 
     @classmethod
     def trigger(cls, func_name, *args, **kwargs):
