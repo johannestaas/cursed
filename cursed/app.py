@@ -335,8 +335,10 @@ class CursedWindow(object):
         menu_attrs = curses.A_REVERSE | curses.A_BOLD
         saved_pos = (cls.cx, cls.cy)
         for mkey, title, menu in cls.MENU.menus:
-            if x >= cls.WIDTH:
-                raise CursedError('Menu exceeds width of window: %d' % x)
+            # double check we're not going to write out of bounds
+            if x + len(title) + 2 >= cls.WIDTH:
+                raise CursedError('Menu %s exceeds width of window: x=%d' % (
+                    title, x))
             cls.addstr(title + '  ', x, y, attr=menu_attrs)
             if cls._OPENED_MENU and cls._OPENED_MENU[0] == title:
                 for name, key, cb in menu:
