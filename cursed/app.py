@@ -329,10 +329,14 @@ class CursedWindow(object):
     @classmethod
     def _cw_menu_display(cls):
         x = 0
+        # Because cls with MENU will add 1 to y in _fix_xy, we need true origin
         y = -1
+        # Makes the menu standout
         menu_attrs = curses.A_REVERSE | curses.A_BOLD
         saved_pos = (cls.cx, cls.cy)
         for mkey, title, menu in cls.MENU.menus:
+            if x >= cls.WIDTH:
+                raise CursedError('Menu exceeds width of window: %d' % x)
             cls.addstr(title + '  ', x, y, attr=menu_attrs)
             if cls._OPENED_MENU and cls._OPENED_MENU[0] == title:
                 for name, key, cb in menu:
@@ -342,6 +346,7 @@ class CursedWindow(object):
                     else:
                         s = name
                     cls.addstr(s, x, y)
+            # For the empty space filler
             x += len(title) + 2
         cls.addstr(' ' * (cls.WIDTH - x), x, -1, attr=menu_attrs)
         cls.cx, cls.cy = saved_pos
