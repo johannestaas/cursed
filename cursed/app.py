@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import traceback
 from Queue import Queue
 import curses
 import gevent
@@ -8,7 +9,7 @@ import gevent
 BASE_CURSED_CLASSES = ('CursedWindowClass', 'CursedWindow', 'CursedMenu')
 
 
-class CursedError(RuntimeError):
+class CursedError(ValueError):
     pass
 
 
@@ -324,11 +325,13 @@ class Result(object):
 
     def __init__(self):
         self.exc_type, self.exc, self.tb = None, None, None
-        self.threads = None
 
-    def _extract_exception(self, threads=None):
+    def _extract_exception(self):
         self.exc_type, self.exc, self.tb = sys.exc_info()
-        self.threads = threads
+
+    def _extract_thread_exception(self, thread):
+        exc = thread.exception
+        self.exc_type, self.exc, self.tb = thread.exc_info
 
     def unwrap(self):
         if self.exc:
@@ -345,7 +348,7 @@ class Result(object):
 
     def print_exc(self):
         if self.tb:
-            sys.stderr.write(self.tb)
+            traceback.print_tb(self.tb)
 
     def __repr__(self):
         if self.exc_type is None:
@@ -407,9 +410,9 @@ class CursedApp(object):
             gevent.joinall(self.threads)
             for thread in self.threads:
                 if thread.exception:
-                    raise thread.exception
+                    result._extract_thread_exception(thread)
         except KeyboardInterrupt:
-            result._extract_exception(threads=self.threads)
+            result._extract_exception()
         except Exception:
             result._extract_exception()
         finally:
@@ -421,45 +424,85 @@ class CursedApp(object):
         return result
 
 
+class CursedMenuBar(object):
+
+    def __init__(self):
+        self.menus = []
+
+    def add_menu(self, title, key=None):
+        title = title.strip()
+        if not title:
+            raise CursedError('Menu must have a name.')
+        if key is None:
+            key = title[0].lower()
+        self.menus += [
+            (key, title, [])
+        ]
+
+    def add_items(self, *args):
+        if not self.menus:
+            raise CursedError('Must add_menu before adding items.')
+        mkey, mtitle, menu = self.menus[-1]
+        for arg in args:
+            if len(arg) == 2:
+                name, cb = arg
+                key = None
+            elif len(arg) == 3:
+                name, key, cb = arg
+            else:
+                raise CursedError('Format for menu item must be '
+                                  '(Title, key, function name)')
+            name = name.strip()
+            if not name:
+                raise CursedError('Menu item must have a name.')
+            menu += [(name, key, cb)]
+
+
 class CursedMenu(CursedWindow):
     HEIGHT = 1
-    ITEMS = ()
+    MENU = None
     WAIT = False
     KEYMAP = {}
     OPENED_MENU = None
 
     @classmethod
     def init(cls):
-        for key, name, items in cls.ITEMS:
+        for mkey, title, menu in cls.MENU.menus:
             key_d = {}
-            cls.KEYMAP[key] = key_d
-            for key2, name2, func_name in items:
-                key_d[key2] = func_name
+            cls.KEYMAP[mkey] = (title, key_d)
+            for name, key, cb in menu:
+                if key:
+                    key_d[key] = cb
 
     @classmethod
-    def _display(cls, key=None):
+    def _display(cls):
         l = 0
-        set_menu = None
-        for ikey, name, items in cls.ITEMS:
-            cls.addstr(name, attr=curses.A_BOLD)
-            cls.addstr(' ')
-            if key is not None and key == ikey:
-                set_menu = ikey
-                for item_key, item_name, item_func in items:
+        for mkey, title, menu in cls.MENU.menus:
+            cls.cy = 0
+            cls.cx = l
+            cls.addstr(title, attr=curses.A_BOLD)
+            cls.addstr('  ')
+            if cls.OPENED_MENU[0] == title:
+                for name, key, cb in menu:
                     cls.cx = l
                     cls.cy += 1
-                    cls.addstr(item_name)
-            l += len(name) + 1
+                    s = name
+                    if key:
+                        s = '{} - {}'.format(name, key)
+                    cls.addstr(s)
+            l += len(title) + 2
 
     @classmethod
     def update(cls):
         c = cls.getch()
         if c is None:
-            continue
+            return
         if cls.OPENED_MENU is None:
             if chr(c) in cls.KEYMAP:
-                cls._display(key=chr(c))
-                cls.OPENED_MENU
+                cls._display()
+                cls.OPENED_MENU = cls.KEYMAP[chr(c)]
         else:
-            attr = cls.OPENED_MENU.get(chr(c))
-            if attr is not None:
+            cb = cls.OPENED_MENU[1].get(chr(c))
+            if cb is not None:
+                func = getattr(cls, cb)
+                func()

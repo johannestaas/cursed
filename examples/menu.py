@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from cursed import CursedApp, CursedWindow, CursedMenu
+from cursed import CursedApp, CursedWindow, CursedMenu, CursedMenuBar
 app = CursedApp()
 
 
@@ -7,22 +7,17 @@ class Menu(CursedMenu):
     # Tuple of menus
     # First tuple is a 2-tuple of (letter, name) of the menu
     # Next few is 3-tuple of (letter, name, function_name)
-    ITEMS = (
-        (
-            ('f', 'File'),
-            ('s', 'Save', 'save'),
-            ('q', 'Quit', 'quit'),
-        ),
-        (
-            ('e', 'Edit'),
-            ('c', 'Copy', 'copy'),
-            ('p', 'Paste', 'paste'),
-        ),
-        (
-            ('t', 'Test'),
-            ('T', 'Test2', 'test2'),
-            ('3', 'Three', 'three'),
-        ),
+    MENU = CursedMenuBar()
+    MENU.add_menu('File', 'f')
+    MENU.add_items(
+        ('Save', 's', 'save'),
+        ('Quit', 'q', 'quit'),
+    )
+    MENU.add_menu('Edit', 'e')
+    MENU.add_items(
+        ('Copy', 'c', 'copy'),
+        ('Paste', 'v', 'paste'),
+        ('Delete', 'delete')
     )
 
     @classmethod
@@ -42,12 +37,8 @@ class Menu(CursedMenu):
         MainWindow.write('edit->paste')
 
     @classmethod
-    def test2(cls):
-        MainWindow.write('test->test2')
-
-    @classmethod
-    def three(cls):
-        MainWindow.write('test->three')
+    def delete(cls):
+        MainWindow.write('edit->delete')
 
 
 class MainWindow(CursedWindow):
@@ -72,7 +63,5 @@ result = app.run()
 print(result)
 if result.interrupted():
     print('Ctrl-C pressed.')
-    if result.threads is not None:
-        print('Threads: %s' % ' || '.join(str(x) for x in result.threads))
 else:
     result.unwrap()
