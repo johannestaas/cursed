@@ -1,8 +1,9 @@
 ''' cursed
 
-Simplified curses
+Simplified curses interface
 '''
-from cursed.app import CursedApp, CursedWindow
+from cursed.app import CursedApp
+from cursed.window import CursedWindow
 from cursed.menu import CursedMenu
 
 __author__ = 'Johan Nestaas <johannestaas@gmail.com>'

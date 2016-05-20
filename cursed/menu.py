@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+'''
+cursed.menu
+
+The menu data class.
+Most of the menu implementation is actually in the cursed.window module.
+'''
+
 from cursed.exceptions import CursedMenuError
 
 

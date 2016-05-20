@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+'''
+cursed.exceptions
+
+Base exceptions used by cursed.
+'''
 
 
 class CursedSizeError(RuntimeError):
