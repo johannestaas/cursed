@@ -2,7 +2,8 @@
 
 Simplified curses
 '''
-from cursed.app import CursedApp, CursedWindow, CursedMenu
+from cursed.app import CursedApp, CursedWindow
+from cursed.menu import CursedMenu
 
 __author__ = 'Johan Nestaas <johannestaas@gmail.com>'
 __title__ = 'cursed'

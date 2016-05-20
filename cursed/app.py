@@ -5,6 +5,8 @@ from Queue import Queue
 import curses
 import gevent
 
+from cursed.exceptions import CursedSizeError, CursedCallbackError
+
 
 BASE_CURSED_CLASSES = ('CursedWindowClass', 'CursedWindow', 'CursedMenu')
 
@@ -15,10 +17,6 @@ def _debug(s):
     '''
     with open('debug.log', 'a') as f:
         f.write(s + '\n')
-
-
-class CursedError(ValueError):
-    pass
 
 
 class CursedWindowClass(type):
@@ -166,7 +164,7 @@ class CursedWindow(object):
                 cls.WINDOW.scroll()
                 cls.WINDOW.move(y, 0)
             else:
-                raise CursedError('Window %s reached height at %d' % (
+                raise CursedSizeError('Window %s reached height at %d' % (
                     cls.__name__, y + 1))
         else:
             cls.WINDOW.move(y + 1, x)
@@ -299,11 +297,11 @@ class CursedWindow(object):
         cls.APP = app
         height, width = window.getmaxyx()
         if width < cls.WIDTH:
-            raise CursedError('terminal width is %d and window width is %d' %
-                              (width, cls.WIDTH))
+            raise CursedSizeError('terminal width is %d and window width is '
+                                     '%d' % (width, cls.WIDTH))
         if height < cls.HEIGHT:
-            raise CursedError('terminal height is %d and window height is %d' %
-                              (height, cls.HEIGHT))
+            raise CursedSizeError('terminal height is %d and window height '
+                                     'is %d' % (height, cls.HEIGHT))
         cls.WINDOW = window.subwin(cls.HEIGHT, cls.WIDTH, cls.Y, cls.X)
         if cls.SCROLL:
             cls.WINDOW.scrollok(True)
@@ -339,12 +337,12 @@ class CursedWindow(object):
                 cls.RUNNING = False
                 break
             if not hasattr(cls, func_name):
-                raise CursedError('%s has no function %s' % (cls.__name__,
-                                                             func_name))
+                raise CursedCallbackError('%s has no function %s' % (
+                    cls.__name__, func_name))
             func = getattr(cls, func_name)
             if not callable(func):
-                raise CursedError('%s has no callable %s' % (cls.__name__,
-                                                             func_name))
+                raise CursedCallbackError('%s has no callable %s' % (
+                    cls.__name__, func_name))
             cls.RESULTS.put(
                 (func_name, args, kwargs, func(*args, **kwargs))
             )
@@ -369,8 +367,8 @@ class CursedWindow(object):
         for mkey, title, menu in cls.MENU.menus:
             # double check we're not going to write out of bounds
             if x + len(title) + 2 >= cls.WIDTH:
-                raise CursedError('Menu %s exceeds width of window: x=%d' % (
-                    title, x))
+                raise CursedSizeError('Menu %s exceeds width of window: x=%d' %
+                                      (title, x))
             y = -1
             cls.addstr(title + '  ', x, y, attr=menu_attrs)
             if cls._OPENED_MENU and cls._OPENED_MENU[0] == title:
@@ -532,37 +530,3 @@ class CursedApp(object):
             curses.nocbreak()
             curses.endwin()
         return result
-
-
-class CursedMenu(object):
-
-    def __init__(self):
-        self.menus = []
-
-    def add_menu(self, title, key=None):
-        title = title.strip()
-        if not title:
-            raise CursedError('Menu must have a name.')
-        if key is None:
-            key = title[0].lower()
-        self.menus += [
-            (key, title, [])
-        ]
-
-    def add_items(self, *args):
-        if not self.menus:
-            raise CursedError('Must add_menu before adding items.')
-        mkey, mtitle, menu = self.menus[-1]
-        for arg in args:
-            if len(arg) == 2:
-                name, cb = arg
-                key = None
-            elif len(arg) == 3:
-                name, key, cb = arg
-            else:
-                raise CursedError('Format for menu item must be '
-                                  '(Title, key, function name)')
-            name = name.strip()
-            if not name:
-                raise CursedError('Menu item must have a name.')
-            menu += [(name, key, cb)]
