@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import os
+import socket
 from datetime import datetime
 from cursed import CursedApp, CursedWindow
 import requests
@@ -6,6 +8,9 @@ import requests
 app = CursedApp()
 last_time = None
 last_ip = None
+hostname = socket.gethostname()
+username = os.getlogin()
+cwd = os.getcwd()
 
 
 def my_ip():
@@ -36,7 +41,13 @@ class MainWindow(CursedWindow):
         if c == 27:
             cls.trigger('quit')
             return
-        cls.addstr('My IP: %s' % my_ip(), 0, 0)
+        cls.addstr('username: %s' % username, 0, 0)
+        cls.nextline()
+        cls.addstr('hostname: %s' % hostname)
+        cls.nextline()
+        cls.addstr('cwd: %s' % cwd)
+        cls.nextline()
+        cls.addstr('IP addr: %s' % my_ip())
         cls.nextline()
         for mem_line in my_mem():
             cls.addstr(mem_line)
