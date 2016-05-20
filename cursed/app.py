@@ -297,6 +297,13 @@ class CursedWindow(object):
     def _cw_setup_run(cls, app, window):
         cls.RUNNING = True
         cls.APP = app
+        height, width = window.getmaxyx()
+        if width < cls.WIDTH:
+            raise CursedError('terminal width is %d and window width is %d' %
+                              (width, cls.WIDTH))
+        if height < cls.HEIGHT:
+            raise CursedError('terminal height is %d and window height is %d' %
+                              (height, cls.HEIGHT))
         cls.WINDOW = window.subwin(cls.HEIGHT, cls.WIDTH, cls.Y, cls.X)
         if cls.SCROLL:
             cls.WINDOW.scrollok(True)
