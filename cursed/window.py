@@ -10,6 +10,7 @@ import curses
 import gevent
 from cursed.exceptions import CursedSizeError, CursedCallbackError
 from cursed.meta import CursedWindowClass
+from cursed.version import PY3
 
 def _debug(s):
     '''
@@ -169,8 +170,12 @@ class CursedWindow(object):
 
     @classmethod
     def _fix_attr(cls, attr):
-        if isinstance(attr, basestring):
-            return getattr(curses, 'A_%s' % attr.upper())
+        if PY3:
+            if isinstance(attr, str):
+                return getattr(curses, 'A_%s' % attr.upper())
+        else:
+            if isinstance(attr, basestring):
+                return getattr(curses, 'A_%s' % attr.upper())
         return attr
 
     @classmethod

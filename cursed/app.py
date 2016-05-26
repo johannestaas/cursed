@@ -11,6 +11,7 @@ import gevent
 import curses
 
 from cursed.window import CursedWindowClass
+from cursed.version import PY3
 
 
 class Result(object):
@@ -26,7 +27,19 @@ class Result(object):
 
     def unwrap(self):
         if self.exc:
-            raise self.exc_type, self.exc, self.tb
+            if PY3:
+                err_msg = '\n{}({})\n{}'.format(
+                    self.exc_type.__name__,
+                    str(self.exc),
+                    ''.join(traceback.format_tb(self.tb)),
+                )
+                # Might work, but depends on exc_type?
+                # self.exc.__traceback__ = self.tb
+                # raise self.exc_type(self.exc)
+                raise RuntimeError(err_msg)
+            else:
+                # Old style raise, but bad syntax in Python 3.
+                exec('raise self.exc_type, self.exc, self.tb')
 
     def ok(self):
         return not bool(self.exc)
