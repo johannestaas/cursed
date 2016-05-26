@@ -1,7 +1,9 @@
 cursed
 ======
 
-Simplified curses interface, for quick and sane curses apps.
+Simplified curses interface with concurrency, for quick and sane curses apps.
+
+Allows easy creation of windows and menus. Code for each window runs concurrently.
 
 Installation
 ------------
