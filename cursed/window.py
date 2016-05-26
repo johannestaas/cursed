@@ -336,7 +336,7 @@ class CursedWindow(object):
             # double check we're not going to write out of bounds
             if x + len(menu.title) + 2 >= cls.WIDTH:
                 raise CursedSizeError('Menu %s exceeds width of window: x=%d' %
-                                      (title, x))
+                                      (menu.title, x))
             y = -1
             cls.addstr(menu.title + '  ', x, y, attr=menu_attrs)
             if menu is cls._OPENED_MENU:
