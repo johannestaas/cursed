@@ -47,6 +47,9 @@ Example::
 Release Notes
 -------------
 
+:0.1.1:
+    - left and right open menus to sides
+    - refactored menus
 :0.1.0:
     - implemented menus!
 :0.0.2:
