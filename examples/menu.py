@@ -43,6 +43,10 @@ class MainWindow(CursedWindow):
     @classmethod
     def update(cls):
         cls.addstr('x=10, y=12', 10, 12)
+        # Press spacebar to open menu
+        k = cls.getch()
+        if k == 32:
+            cls.openmenu()
 
 
 class FooterWindow(CursedWindow):

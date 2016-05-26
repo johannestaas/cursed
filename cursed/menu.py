@@ -13,8 +13,6 @@ class CursedMenu(object):
 
     def __init__(self):
         self.menus = []
-        self.counts = {}
-        self.callbacks = {}
 
     def add_menu(self, title, key=None):
         title = title.strip()
@@ -22,16 +20,13 @@ class CursedMenu(object):
             raise CursedMenuError('Menu must have a name.')
         if key is None:
             key = title[0].lower()
-        self.menus += [
-            (key, title, [])
-        ]
-        self.counts[title] = 0
-        self.callbacks[title] = []
+        self.menus += [Menu(title=title, key=key, items=[])]
+
 
     def add_items(self, *args):
         if not self.menus:
             raise CursedMenuError('Must add_menu before adding items.')
-        mkey, mtitle, menu = self.menus[-1]
+        menu = self.menus[-1]
         for arg in args:
             if len(arg) == 2:
                 name, cb = arg
@@ -44,7 +39,114 @@ class CursedMenu(object):
             name = name.strip()
             if not name:
                 raise CursedMenuError('Menu item must have a name.')
-            menu += [(name, key, cb)]
-            self.callbacks[mtitle] += [cb]
-        self.menus[-1] = mkey, mtitle, menu
-        self.counts[mtitle] = len(menu)
+            menu.add_item(MenuItem(name=name, key=key, cb=cb))
+
+
+class OpenMenu(object):
+
+    def __init__(self, index=None, title=None, cb_map=None):
+        self.index = index
+        self.title = title
+        self.cb_map = key_map
+
+
+class MenuItem(object):
+
+    def __init__(self, name=None, key=None, cb=None):
+        self.name = name
+        self.key = key
+        self.cb = cb
+
+    def __str__(self):
+        if self.key:
+            return '[{0}] {1}'.format(self.key, self.name)
+        return self.name
+
+
+class Menu(object):
+    ALL = []
+    KEY_MAP = {}
+    TITLE_MAP = {}
+
+    def __init__(self, title=None, key=None, items=None):
+        self.title = title
+        self.key = key
+        self.items = []
+        self.item_map = {}
+        self.index = len(Menu.ALL)
+        self.selected = None
+        Menu.ALL += [self]
+        Menu.TITLE_MAP[title] = self
+        Menu.KEY_MAP[key] = self
+
+    @classmethod
+    def clear_select(cls):
+        for menu in cls.ALL:
+            menu.selected = None
+
+    def add_item(self, menu_item):
+        self.items += [menu_item]
+        self.item_map[menu_item.key] = menu_item
+
+    def get_cb(self, key):
+        if key in self.item_map:
+            return self.item_map[key].cb
+        return None
+
+    @classmethod
+    def get_menu_from_key(cls, key):
+        return Menu.KEY_MAP.get(key)
+
+    @classmethod
+    def get_menu_at(cls, i):
+        if i >= len(Menu.ALL):
+            return None
+        return Menu.ALL[i]
+
+    @classmethod
+    def get_menu_from_title(cls, title):
+        return Menu.TITLE_MAP.get(title)
+
+    @classmethod
+    def size(cls):
+        return len(Menu.ALL)
+
+    def down(self):
+        if self.selected is None:
+            self.selected = self.items[0]
+        else:
+            i = self.items.index(self.selected)
+            i += 1
+            if i == len(self.items):
+                i = 0
+            self.selected = self.items[i]
+
+    def up(self):
+        if self.selected is None:
+            self.selected = self.items[-1]
+        else:
+            i = self.items.index(self.selected)
+            i -= 1
+            if i == -1:
+                i = len(self.items) - 1
+            self.selected = self.items[i]
+
+    @classmethod
+    def right(cls, menu):
+        if menu is None:
+            return None
+        i = cls.ALL.index(menu)
+        i += 1
+        if i == len(cls.ALL):
+            return cls.ALL[0]
+        return cls.ALL[i]
+
+    @classmethod
+    def left(cls, menu):
+        if menu is None:
+            return None
+        i = cls.ALL.index(menu)
+        i -= 1
+        if i == -1:
+            return cls.ALL[-1]
+        return cls.ALL[i]

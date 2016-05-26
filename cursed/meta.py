@@ -34,7 +34,7 @@ class CursedWindowClass(type):
         new.SCROLL = dct.get('SCROLL', False)
         new.WAIT = dct.get('WAIT', True)
         new.MENU = dct.get('MENU', None)
-        new._KEYMAP = {}
+        new._MENU_MAP = {}
         new._OPENED_MENU = None
         new._SELECTED_ITEM = None
         cls.WINDOWS += [new]

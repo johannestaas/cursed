@@ -11,6 +11,7 @@ import gevent
 import six
 from cursed.exceptions import CursedSizeError, CursedCallbackError
 from cursed.meta import CursedWindowClass
+from cursed.menu import Menu
 
 
 @six.add_metaclass(CursedWindowClass)
@@ -294,6 +295,15 @@ class CursedWindow(object):
         cls.WINDOW.refresh()
 
     @classmethod
+    def openmenu(cls):
+        if cls._OPENED_MENU:
+            return
+        if not Menu.size():
+            return
+        cls._OPENED_MENU = Menu.get_menu_at(0)
+        cls.redraw()
+
+    @classmethod
     def _cw_handle_events(cls):
         while not cls.EVENTS.empty():
             func_name, args, kwargs = cls.EVENTS.get()
@@ -315,15 +325,6 @@ class CursedWindow(object):
             )
 
     @classmethod
-    def _cw_setup_menu(cls):
-        for mkey, title, menu in cls.MENU.menus:
-            key_d = {}
-            cls._KEYMAP[mkey] = (title, key_d)
-            for name, key, cb in menu:
-                if key:
-                    key_d[key] = cb
-
-    @classmethod
     def _cw_menu_display(cls):
         x = 0
         # Because cls with MENU will add 1 to y in _fix_xy, we need true origin
@@ -331,28 +332,23 @@ class CursedWindow(object):
         # Makes the menu standout
         menu_attrs = curses.A_REVERSE | curses.A_BOLD
         saved_pos = cls.getxy()
-        for mkey, title, menu in cls.MENU.menus:
+        for menu in Menu.ALL:
             # double check we're not going to write out of bounds
-            if x + len(title) + 2 >= cls.WIDTH:
+            if x + len(menu.title) + 2 >= cls.WIDTH:
                 raise CursedSizeError('Menu %s exceeds width of window: x=%d' %
                                       (title, x))
             y = -1
-            cls.addstr(title + '  ', x, y, attr=menu_attrs)
-            if cls._OPENED_MENU and cls._OPENED_MENU[0] == title:
-                for i, name_key_cb in enumerate(menu):
-                    name, key, cb = name_key_cb
+            cls.addstr(menu.title + '  ', x, y, attr=menu_attrs)
+            if menu is cls._OPENED_MENU:
+                for item in menu.items:
                     y += 1
-                    if key:
-                        s = '[{1}] {0}'.format(name, key)
-                    else:
-                        s = name
-                    if i == cls._SELECTED_ITEM:
+                    if item is menu.selected:
                         attr = curses.A_UNDERLINE
                     else:
                         attr = curses.A_REVERSE
-                    cls.addstr(s, x, y, attr=attr)
+                    cls.addstr(str(item), x, y, attr=attr)
             # For the empty space filler
-            x += len(title) + 2
+            x += len(menu.title) + 2
         # color the rest of the top of the window
         extra = 2 if cls.BORDERED else 0
         cls.addstr(' ' * (cls.WIDTH - x - extra), x, -1, attr=menu_attrs)
@@ -360,31 +356,31 @@ class CursedWindow(object):
 
     @classmethod
     def _cw_menu_down(cls):
-        ct = cls.MENU.counts[cls._OPENED_MENU[0]]
-        if cls._SELECTED_ITEM is None:
-            cls._SELECTED_ITEM = 0
-        else:
-            cls._SELECTED_ITEM += 1
-            if cls._SELECTED_ITEM == ct:
-                cls._SELECTED_ITEM = 0
+        cls._OPENED_MENU.down()
         cls.redraw()
 
     @classmethod
     def _cw_menu_up(cls):
-        ct = cls.MENU.counts[cls._OPENED_MENU[0]]
-        if cls._SELECTED_ITEM is None:
-            cls._SELECTED_ITEM = ct - 1
-        else:
-            cls._SELECTED_ITEM -= 1
-            if cls._SELECTED_ITEM == -1:
-                cls._SELECTED_ITEM = ct - 1
+        cls._OPENED_MENU.up()
+        cls.redraw()
+
+    @classmethod
+    def _cw_menu_left(cls):
+        Menu.clear_select()
+        cls._OPENED_MENU = Menu.left(cls._OPENED_MENU)
+        cls.redraw()
+
+    @classmethod
+    def _cw_menu_right(cls):
+        Menu.clear_select()
+        cls._OPENED_MENU = Menu.right(cls._OPENED_MENU)
         cls.redraw()
 
     @classmethod
     def _cw_menu_key(cls, k):
-        cb = cls._OPENED_MENU[1].get(k)
+        cb = cls._OPENED_MENU.get_cb(k)
         cls._OPENED_MENU = None
-        cls._SELECTED_ITEM = None
+        Menu.clear_select()
         cls.redraw()
         if cb:
             # Run callback associated with menu item
@@ -392,12 +388,11 @@ class CursedWindow(object):
 
     @classmethod
     def _cw_menu_enter(cls):
-        cbs = cls.MENU.callbacks[cls._OPENED_MENU[0]]
         cb = None
-        if cls._SELECTED_ITEM is not None:
-            cb = cbs[cls._SELECTED_ITEM]
+        if cls._OPENED_MENU.selected:
+            cb = cls._OPENED_MENU.selected.cb
         cls._OPENED_MENU = None
-        cls._SELECTED_ITEM = None
+        Menu.clear_select()
         cls.redraw()
         if cb:
             cls.trigger(cb)
@@ -411,9 +406,9 @@ class CursedWindow(object):
         if 0 < c < 256:
             k = chr(c)
         if cls._OPENED_MENU is None:
-            if k and k in cls._KEYMAP:
-                cls._OPENED_MENU = cls._KEYMAP[k]
-                cls._SELECTED_ITEM = None
+            if k:
+                cls._OPENED_MENU = Menu.get_menu_from_key(k)
+                Menu.clear_select()
                 cls.redraw()
         else:
             # If a menu is open, check if they pressed a key or up/down/enter
@@ -423,19 +418,21 @@ class CursedWindow(object):
                 cls._cw_menu_down()
             elif c == 0x103:
                 cls._cw_menu_up()
+            elif c == 0x104:
+                cls._cw_menu_right()
+            elif c == 0x105:
+                cls._cw_menu_left()
             elif c == 0xa:
                 cls._cw_menu_enter()
             else:
                 # clear the menu
                 cls._OPENED_MENU = None
-                cls._SELECTED_ITEM = None
+                Menu.clear_select()
                 cls.redraw()
 
     @classmethod
     def _cw_run(cls, app, window):
         cls._cw_setup_run(app, window)
-        if cls.MENU:
-            cls._cw_setup_menu()
         cls.redraw()
         has_update = hasattr(cls, 'update') and callable(cls.update)
         if hasattr(cls, 'init') and callable(cls.init):
