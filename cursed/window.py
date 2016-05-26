@@ -339,14 +339,18 @@ class CursedWindow(object):
                                       (menu.title, x))
             y = -1
             cls.addstr(menu.title + '  ', x, y, attr=menu_attrs)
+            mxlen = max([len(str(i)) for i in menu.items])
             if menu is cls._OPENED_MENU:
                 for item in menu.items:
                     y += 1
+                    itemstr = str(item)
+                    wspace = (mxlen - len(itemstr)) * ' '
+                    itemstr = itemstr + wspace
                     if item is menu.selected:
                         attr = curses.A_UNDERLINE
                     else:
                         attr = curses.A_REVERSE
-                    cls.addstr(str(item), x, y, attr=attr)
+                    cls.addstr(itemstr, x, y, attr=attr)
             # For the empty space filler
             x += len(menu.title) + 2
         # color the rest of the top of the window
