@@ -12,7 +12,6 @@ import six
 import curses
 
 from cursed.window import CursedWindowClass
-from cursed.version import PY3
 
 
 class Result(object):

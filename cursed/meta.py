@@ -5,12 +5,9 @@ cursed.meta
 This contains the metaclass used to decorate all user classes that subclass
 CursedWindow, crucial for the curses interface to work.
 '''
-from cursed.version import PY3
+import six
+from six.moves.queue import Queue
 
-if PY3:
-    from queue import Queue
-else:
-    from Queue import Queue
 
 
 BASE_CURSED_CLASSES = ('CursedWindowClass', 'CursedWindow', 'CursedMenu')
