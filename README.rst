@@ -49,6 +49,8 @@ Example::
 Release Notes
 -------------
 
+:0.1.0:
+    - implemented menus!
 :0.0.2:
     - implemented lots from the following:
         1. https://docs.python.org/2/library/curses.html
