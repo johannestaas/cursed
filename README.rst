@@ -49,6 +49,8 @@ Example::
 Release Notes
 -------------
 
+:0.1.3:
+    - Fixed menu to fill up right side with whitespace
 :0.1.2:
     - fixed menus stealing keypresses
 :0.1.1:
