@@ -47,6 +47,8 @@ Example::
 Release Notes
 -------------
 
+:0.1.2:
+    - fixed menus stealing keypresses
 :0.1.1:
     - left and right open menus to sides
     - refactored menus
