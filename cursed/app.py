@@ -124,7 +124,7 @@ class CursedApp(object):
         finally:
             if self.scr is not None:
                 self.scr.keypad(0)
-            curses.echo()
-            curses.nocbreak()
-            curses.endwin()
+                curses.echo()
+                curses.nocbreak()
+                curses.endwin()
         return result
