@@ -359,6 +359,50 @@ class CursedWindow(object):
         cls.move(*saved_pos)
 
     @classmethod
+    def _cw_menu_down(cls):
+        ct = cls.MENU.counts[cls._OPENED_MENU[0]]
+        if cls._SELECTED_ITEM is None:
+            cls._SELECTED_ITEM = 0
+        else:
+            cls._SELECTED_ITEM += 1
+            if cls._SELECTED_ITEM == ct:
+                cls._SELECTED_ITEM = 0
+        cls.redraw()
+
+    @classmethod
+    def _cw_menu_up(cls):
+        ct = cls.MENU.counts[cls._OPENED_MENU[0]]
+        if cls._SELECTED_ITEM is None:
+            cls._SELECTED_ITEM = ct - 1
+        else:
+            cls._SELECTED_ITEM -= 1
+            if cls._SELECTED_ITEM == -1:
+                cls._SELECTED_ITEM = ct - 1
+        cls.redraw()
+
+    @classmethod
+    def _cw_menu_key(cls, k):
+        cb = cls._OPENED_MENU[1].get(k)
+        cls._OPENED_MENU = None
+        cls._SELECTED_ITEM = None
+        cls.redraw()
+        if cb:
+            # Run callback associated with menu item
+            cls.trigger(cb)
+
+    @classmethod
+    def _cw_menu_enter(cls):
+        cbs = cls.MENU.callbacks[cls._OPENED_MENU[0]]
+        cb = None
+        if cls._SELECTED_ITEM is not None:
+            cb = cbs[cls._SELECTED_ITEM]
+        cls._OPENED_MENU = None
+        cls._SELECTED_ITEM = None
+        cls.redraw()
+        if cb:
+            cls.trigger(cb)
+
+    @classmethod
     def _cw_menu_update(cls):
         c = cls.getch()
         if c is None:
@@ -372,45 +416,15 @@ class CursedWindow(object):
                 cls._SELECTED_ITEM = None
                 cls.redraw()
         else:
-            ct = cls.MENU.counts[cls._OPENED_MENU[0]]
-            cbs = cls.MENU.callbacks[cls._OPENED_MENU[0]]
-            # If you press a key which might call one of the options (not enter)
+            # If a menu is open, check if they pressed a key or up/down/enter
             if k and c != 0xa:
-                cb = cls._OPENED_MENU[1].get(k)
-                cls._OPENED_MENU = None
-                cls._SELECTED_ITEM = None
-                cls.redraw()
-                if cb:
-                    # Run callback associated with menu item
-                    cls.trigger(cb)
-            # Pressed Down
+                cls._cw_menu_key(k)
             elif c == 0x102:
-                if cls._SELECTED_ITEM is None:
-                    cls._SELECTED_ITEM = 0
-                else:
-                    cls._SELECTED_ITEM += 1
-                    if cls._SELECTED_ITEM == ct:
-                        cls._SELECTED_ITEM = 0
-                cls.redraw()
-            # Pressed UP
+                cls._cw_menu_down()
             elif c == 0x103:
-                if cls._SELECTED_ITEM is None:
-                    cls._SELECTED_ITEM = ct - 1
-                else:
-                    cls._SELECTED_ITEM -= 1
-                    if cls._SELECTED_ITEM == -1:
-                        cls._SELECTED_ITEM = ct - 1
-                cls.redraw()
-            # Pressed Enter while selecting an item
+                cls._cw_menu_up()
             elif c == 0xa:
-                cb = None
-                if cls._SELECTED_ITEM is not None:
-                    cb = cbs[cls._SELECTED_ITEM]
-                cls._OPENED_MENU = None
-                cls._SELECTED_ITEM = None
-                cls.redraw()
-                if cb:
-                    cls.trigger(cb)
+                cls._cw_menu_enter()
 
     @classmethod
     def _cw_run(cls, app, window):
