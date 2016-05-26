@@ -399,9 +399,9 @@ class CursedWindow(object):
 
     @classmethod
     def _cw_menu_update(cls):
-        c = cls.getch()
-        if c is None:
-            return
+        if cls.KEY_EVENTS.empty():
+            return None
+        c = cls.KEY_EVENTS.get()
         k = None
         if 0 < c < 256:
             k = chr(c)
@@ -410,6 +410,8 @@ class CursedWindow(object):
                 cls._OPENED_MENU = Menu.get_menu_from_key(k)
                 Menu.clear_select()
                 cls.redraw()
+            if cls._OPENED_MENU is None:
+                cls.KEY_EVENTS.put(c)
         else:
             # If a menu is open, check if they pressed a key or up/down/enter
             if k and c != 0xa:
