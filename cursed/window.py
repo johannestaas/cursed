@@ -425,6 +425,11 @@ class CursedWindow(object):
                 cls._cw_menu_up()
             elif c == 0xa:
                 cls._cw_menu_enter()
+            else:
+                # clear the menu
+                cls._OPENED_MENU = None
+                cls._SELECTED_ITEM = None
+                cls.redraw()
 
     @classmethod
     def _cw_run(cls, app, window):
