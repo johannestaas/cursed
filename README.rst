@@ -19,7 +19,7 @@ Usage
 
 Example::
 
-    from cursed import CursedApp
+    from cursed import CursedApp, CursedWindow
 
     app = CursedApp()
     
@@ -32,8 +32,6 @@ Example::
             ''' update runs every tick '''
             # Hello world printed at x,y of 0,0
             cls.addstr('Hello, world!', 0, 0)
-            # Redraw the screen.
-            cls.redraw()
             if cls.getch() == 27:
                 # Escape was pressed. Quit.
                 cls.trigger('quit')
