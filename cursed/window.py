@@ -12,13 +12,6 @@ from cursed.exceptions import CursedSizeError, CursedCallbackError
 from cursed.meta import CursedWindowClass
 from cursed.version import PY3
 
-def _debug(s):
-    '''
-    It's pretty hard to debug with all the threads running updates constantly...
-    '''
-    with open('debug.log', 'a') as f:
-        f.write(s + '\n')
-
 
 class CursedWindow(object):
     __metaclass__ = CursedWindowClass
@@ -404,3 +397,14 @@ class CursedWindow(object):
     @classmethod
     def trigger(cls, func_name, *args, **kwargs):
         cls.EVENTS.put((func_name, args, kwargs))
+
+
+def _debug(s):
+    '''
+    It's pretty hard to debug with all the threads running updates constantly...
+    remote-pdb is the best solution besides some debug log hackery.
+    '''
+    with open('debug.log', 'a') as f:
+        f.write(s + '\n')
+
+
