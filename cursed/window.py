@@ -8,13 +8,14 @@ ncurses interface to display everything.
 
 import curses
 import gevent
+import six
 from cursed.exceptions import CursedSizeError, CursedCallbackError
 from cursed.meta import CursedWindowClass
 from cursed.version import PY3
 
 
+@six.add_metaclass(CursedWindowClass)
 class CursedWindow(object):
-    __metaclass__ = CursedWindowClass
 
     _CW_WINDOW_SWAP_FUNCS = (
         'mvwin',
@@ -406,5 +407,3 @@ def _debug(s):
     '''
     with open('debug.log', 'a') as f:
         f.write(s + '\n')
-
-

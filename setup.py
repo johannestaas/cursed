@@ -41,7 +41,7 @@ setup(
         'Programming Language :: Python',
     ],
     install_requires=[
-        'gevent',
+        'gevent', 'six',
     ],
     entry_points={
         # 'console_scripts': [
