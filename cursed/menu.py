@@ -13,6 +13,8 @@ class CursedMenu(object):
 
     def __init__(self):
         self.menus = []
+        self.counts = {}
+        self.callbacks = {}
 
     def add_menu(self, title, key=None):
         title = title.strip()
@@ -23,6 +25,8 @@ class CursedMenu(object):
         self.menus += [
             (key, title, [])
         ]
+        self.counts[title] = 0
+        self.callbacks[title] = []
 
     def add_items(self, *args):
         if not self.menus:
@@ -41,3 +45,6 @@ class CursedMenu(object):
             if not name:
                 raise CursedMenuError('Menu item must have a name.')
             menu += [(name, key, cb)]
+            self.callbacks[mtitle] += [cb]
+        self.menus[-1] = mkey, mtitle, menu
+        self.counts[mtitle] = len(menu)

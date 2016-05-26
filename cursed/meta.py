@@ -36,5 +36,6 @@ class CursedWindowClass(type):
         new.MENU = dct.get('MENU', None)
         new._KEYMAP = {}
         new._OPENED_MENU = None
+        new._SELECTED_ITEM = None
         cls.WINDOWS += [new]
         return new

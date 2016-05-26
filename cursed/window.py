@@ -339,13 +339,18 @@ class CursedWindow(object):
             y = -1
             cls.addstr(title + '  ', x, y, attr=menu_attrs)
             if cls._OPENED_MENU and cls._OPENED_MENU[0] == title:
-                for name, key, cb in menu:
+                for i, name_key_cb in enumerate(menu):
+                    name, key, cb = name_key_cb
                     y += 1
                     if key:
                         s = '[{1}] {0}'.format(name, key)
                     else:
                         s = name
-                    cls.addstr(s, x, y, attr=curses.A_REVERSE)
+                    if i == cls._SELECTED_ITEM:
+                        attr = curses.A_UNDERLINE
+                    else:
+                        attr = curses.A_REVERSE
+                    cls.addstr(s, x, y, attr=attr)
             # For the empty space filler
             x += len(title) + 2
         # color the rest of the top of the window
@@ -358,19 +363,54 @@ class CursedWindow(object):
         c = cls.getch()
         if c is None:
             return
-        if not (0 < c < 256):
-            return
+        k = None
+        if 0 < c < 256:
+            k = chr(c)
         if cls._OPENED_MENU is None:
-            if chr(c) in cls._KEYMAP:
-                cls._OPENED_MENU = cls._KEYMAP[chr(c)]
+            if k and k in cls._KEYMAP:
+                cls._OPENED_MENU = cls._KEYMAP[k]
+                cls._SELECTED_ITEM = None
                 cls.redraw()
         else:
-            cb = cls._OPENED_MENU[1].get(chr(c))
-            cls._OPENED_MENU = None
-            cls.redraw()
-            if cb:
-                # Run callback associated with menu item
-                cls.trigger(cb)
+            ct = cls.MENU.counts[cls._OPENED_MENU[0]]
+            cbs = cls.MENU.callbacks[cls._OPENED_MENU[0]]
+            # If you press a key which might call one of the options (not enter)
+            if k and c != 0xa:
+                cb = cls._OPENED_MENU[1].get(k)
+                cls._OPENED_MENU = None
+                cls._SELECTED_ITEM = None
+                cls.redraw()
+                if cb:
+                    # Run callback associated with menu item
+                    cls.trigger(cb)
+            # Pressed Down
+            elif c == 0x102:
+                if cls._SELECTED_ITEM is None:
+                    cls._SELECTED_ITEM = 0
+                else:
+                    cls._SELECTED_ITEM += 1
+                    if cls._SELECTED_ITEM == ct:
+                        cls._SELECTED_ITEM = 0
+                cls.redraw()
+            # Pressed UP
+            elif c == 0x103:
+                if cls._SELECTED_ITEM is None:
+                    cls._SELECTED_ITEM = ct - 1
+                else:
+                    cls._SELECTED_ITEM -= 1
+                    if cls._SELECTED_ITEM == -1:
+                        cls._SELECTED_ITEM = ct - 1
+                cls.redraw()
+            # Pressed Enter while selecting an item
+            elif c == 0xa:
+                cb = None
+                if cls._SELECTED_ITEM is not None:
+                    cb = cbs[cls._SELECTED_ITEM]
+                cls._OPENED_MENU = None
+                cls._SELECTED_ITEM = None
+                cls.redraw()
+                if cb:
+                    cls.trigger(cb)
 
     @classmethod
     def _cw_run(cls, app, window):
