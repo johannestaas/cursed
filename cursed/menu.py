@@ -18,10 +18,7 @@ class CursedMenu(object):
         title = title.strip()
         if not title:
             raise CursedMenuError('Menu must have a name.')
-        if key is None:
-            key = title[0].lower()
         self.menus += [Menu(title=title, key=key, items=[])]
-
 
     def add_items(self, *args):
         if not self.menus:
@@ -47,7 +44,7 @@ class OpenMenu(object):
     def __init__(self, index=None, title=None, cb_map=None):
         self.index = index
         self.title = title
-        self.cb_map = key_map
+        self.cb_map = cb_map
 
 
 class MenuItem(object):
@@ -77,7 +74,8 @@ class Menu(object):
         self.selected = None
         Menu.ALL += [self]
         Menu.TITLE_MAP[title] = self
-        Menu.KEY_MAP[key] = self
+        if key is not None:
+            Menu.KEY_MAP[key] = self
 
     @classmethod
     def clear_select(cls):

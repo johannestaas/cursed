@@ -138,9 +138,17 @@ class CursedWindow(object):
             cls.WINDOW.move(y + 1, x)
 
     @classmethod
-    def write(cls, msg):
-        cls.addstr(str(msg))
-        cls.nextline()
+    def write(cls, msg, *args):
+        x, y = args if args else cls.getxy()
+        x, y0 = cls._fix_xy(x, y)
+        y = y0
+        for i, line in enumerate(str(msg).splitlines()):
+            if y == cls.HEIGHT:
+                break
+            if len(line) + x >= cls.WIDTH:
+                line = line[:cls.WIDTH - x - 1]
+            cls.addstr(line, x, y)
+            y += 1
 
     @classmethod
     def _fix_xy(cls, x, y):
@@ -188,11 +196,16 @@ class CursedWindow(object):
             return cls.WINDOW.addnstr(y, x, s, n, attr)
 
     @classmethod
-    def getstr(cls, *args):
-        if args:
-            x, y = cls._fix_xy(*args)
-            return cls.WINDOW.getstr(x, y)
-        return cls.WINDOW.getstr()
+    def getstr(cls, *args, **kwargs):
+        x, y = args if args else cls.getxy()
+        xp, yp = cls._fix_xy(x, y)
+        if 'prompt' in kwargs:
+            cls.addstr(kwargs['prompt'], x, y)
+            xp += len(kwargs['prompt'])
+        curses.echo()
+        s = cls.WINDOW.getstr(yp, xp)
+        curses.noecho()
+        return s
 
     @classmethod
     def hline(cls, x=None, y=None, char='-', n=None):
