@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import requests
 from cursed import CursedApp, CursedWindow, CursedMenu
 app = CursedApp()
@@ -6,15 +7,53 @@ app = CursedApp()
 
 class HeaderWindow(CursedWindow):
     HEIGHT = 3
+    MENU = CursedMenu()
+    MENU.add_menu('File', 'f')
+    MENU.add_items(('Save response', 's', 'save'))
+    MENU.add_items(('Quit', 'q', 'quit'))
+    MENU.add_menu('Browse', 'b')
+    MENU.add_items(('Open URL', 'o', 'open_url'))
 
     @classmethod
     def update(cls):
+        k = cls.getch()
+        # space bar
+        if k == 0x20:
+            cls.openmenu()
+
+    @classmethod
+    def open_url(cls):
         cls.redraw()
-        cls.addstr('Cursed Browser', 0, 0)
-        cls.hline(0, 1)
-        url = cls.getstr(0, 2, prompt='URL: ')
+        url = cls.getstr(0, 1, prompt='URL: ')
         if url:
             DisplayWindow.trigger('get_request', url)
+
+    @classmethod
+    def save(cls):
+        cls.redraw()
+        if not (
+            hasattr(DisplayWindow, 'response') and
+            DisplayWindow.response.content
+        ):
+            cls.addstr('Error: No response content to save yet', 0, 1)
+        else:
+            path = cls.getstr(0, 1, prompt='save to file: ').decode('utf-8')
+            if path:
+                cls.redraw()
+                if os.path.exists(path):
+                    cls.addstr('Error: {0} exists! please save to a new path.'
+                               .format(path), 0, 1)
+                else:
+                    with open(path, 'wb') as f:
+                        f.write(DisplayWindow.response.content)
+                    cls.addstr('Saved to {0}'.format(path), 0, 1)
+            else:
+                cls.redraw()
+                cls.addstr('Error: please enter a path to a new file.', 0, 1)
+
+    @classmethod
+    def quit(cls):
+        DisplayWindow.trigger('quit')
 
 
 class DisplayWindow(CursedWindow):

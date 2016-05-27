@@ -142,8 +142,8 @@ class CursedWindow(object):
         x, y = args if args else cls.getxy()
         x, y0 = cls._fix_xy(x, y)
         y = y0
-        for i, line in enumerate(str(msg).splitlines()):
-            if y == cls.HEIGHT:
+        for i, line in enumerate(msg.splitlines()):
+            if y == cls.HEIGHT - 1:
                 break
             if len(line) + x >= cls.WIDTH:
                 line = line[:cls.WIDTH - x - 1]
