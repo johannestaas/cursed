@@ -12,6 +12,7 @@ class HeaderWindow(CursedWindow):
         cls.addstr('Cursed Browser', 0, 0)
         cls.hline(0, 1)
         url = cls.getstr(0, 2, prompt='URL: ')
+        cls.redraw()
         if url:
             DisplayWindow.trigger('get_request', url)
 
