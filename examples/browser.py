@@ -18,7 +18,7 @@ class HeaderWindow(CursedWindow):
     @classmethod
     def get_request(cls, url):
         cls.response = requests.get(url)
-        # cls.redraw()
+        cls.redraw()
         cls.write(cls.response.content, 0, 3)
 
 '''
