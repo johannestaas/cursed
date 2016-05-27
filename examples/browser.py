@@ -9,10 +9,10 @@ class HeaderWindow(CursedWindow):
 
     @classmethod
     def update(cls):
+        cls.redraw()
         cls.addstr('Cursed Browser', 0, 0)
         cls.hline(0, 1)
         url = cls.getstr(0, 2, prompt='URL: ')
-        cls.redraw()
         if url:
             DisplayWindow.trigger('get_request', url)
 
@@ -24,9 +24,13 @@ class DisplayWindow(CursedWindow):
 
     @classmethod
     def get_request(cls, url):
-        cls.response = requests.get(url)
         cls.redraw()
-        cls.write(cls.response.content, 0, 0)
+        try:
+            cls.response = requests.get(url)
+        except Exception as e:
+            cls.addstr('Error: {0}'.format(e), 0, 0)
+        else:
+            cls.write(cls.response.content, 0, 0)
 
 
 result = app.run()
