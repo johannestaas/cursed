@@ -18,8 +18,11 @@ class HeaderWindow(CursedWindow):
     def update(cls):
         k = cls.getch()
         # space bar
-        if k == 0x20:
+        if k == 32:
             cls.openmenu()
+        # tab
+        elif k == 9:
+            cls.open_url()
 
     @classmethod
     def open_url(cls):
