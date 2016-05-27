@@ -61,6 +61,7 @@ class CursedApp(object):
         self.running = True
 
     def run_windows(self):
+        CursedWindowClass.fix_windows(self.MAX_WIDTH, self.MAX_HEIGHT)
         self.windows = CursedWindowClass.WINDOWS
         self.active_window = None
         for i, cw in enumerate(self.windows):
@@ -92,6 +93,7 @@ class CursedApp(object):
         result = Result()
         try:
             self.scr = curses.initscr()
+            self.MAX_HEIGHT, self.MAX_WIDTH = self.scr.getmaxyx()
             curses.noecho()
             curses.cbreak()
             curses.start_color()

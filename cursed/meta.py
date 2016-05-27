@@ -5,10 +5,7 @@ cursed.meta
 This contains the metaclass used to decorate all user classes that subclass
 CursedWindow, crucial for the curses interface to work.
 '''
-import six
 from six.moves.queue import Queue
-
-
 
 BASE_CURSED_CLASSES = ('CursedWindowClass', 'CursedWindow', 'CursedMenu')
 
@@ -21,8 +18,8 @@ class CursedWindowClass(type):
         new = super(CursedWindowClass, cls).__new__(cls, name, parents, dct)
         if name in BASE_CURSED_CLASSES:
             return new
-        new.WIDTH = dct.get('WIDTH', 80)
-        new.HEIGHT = dct.get('HEIGHT', 24)
+        new.WIDTH = dct.get('WIDTH')
+        new.HEIGHT = dct.get('HEIGHT')
         new.WINDOW = None
         new.APP = None
         new.X = dct.get('X', 0)
@@ -39,3 +36,16 @@ class CursedWindowClass(type):
         new._SELECTED_ITEM = None
         cls.WINDOWS += [new]
         return new
+
+    @classmethod
+    def fix_windows(cls, maxw, maxh):
+        '''
+        Fixes all windows for which width or height is specified as 'max'.
+        '''
+        if not cls.WINDOWS:
+            return
+        for win in cls.WINDOWS:
+            if win.WIDTH == 'max':
+                win.WIDTH = maxw - win.X
+            if win.HEIGHT == 'max':
+                win.HEIGHT = maxh - win.Y

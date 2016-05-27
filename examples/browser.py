@@ -6,6 +6,9 @@ app = CursedApp()
 
 
 class HeaderWindow(CursedWindow):
+    X = 0
+    Y = 0
+    WIDTH = 'max'
     HEIGHT = 3
     MENU = CursedMenu()
     MENU.add_menu('File', 'f')
@@ -60,8 +63,10 @@ class HeaderWindow(CursedWindow):
 
 
 class DisplayWindow(CursedWindow):
+    X = 0
     Y = 3
-    HEIGHT = 21
+    WIDTH = 'max'
+    HEIGHT = 'max'
     BORDERED = True
 
     @classmethod
