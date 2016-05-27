@@ -37,7 +37,7 @@ class HeaderWindow(CursedWindow):
         ):
             cls.addstr('Error: No response content to save yet', 0, 1)
         else:
-            path = cls.getstr(0, 1, prompt='save to file: ').decode('utf-8')
+            path = cls.getstr(0, 1, prompt='save to file: ')
             if path:
                 cls.redraw()
                 if os.path.exists(path):

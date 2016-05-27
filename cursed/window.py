@@ -205,7 +205,7 @@ class CursedWindow(object):
         curses.echo()
         s = cls.WINDOW.getstr(yp, xp)
         curses.noecho()
-        return s
+        return s.decode('utf-8')
 
     @classmethod
     def hline(cls, x=None, y=None, char='-', n=None):
