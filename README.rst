@@ -49,6 +49,8 @@ Example::
 Release Notes
 -------------
 
+:0.1.5:
+    - patched issue with returning bytes in getstr
 :0.1.4:
     - Implemented getstr
 :0.1.3:
