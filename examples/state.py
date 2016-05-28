@@ -20,7 +20,7 @@ def my_ip():
         response = requests.get('http://icanhazip.com')
         last_time = now
         last_ip = response.content.strip()
-    return last_ip
+    return last_ip.decode('utf-8')
 
 
 def my_mem():
