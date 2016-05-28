@@ -30,7 +30,8 @@ def my_mem():
 
 
 class MainWindow(CursedWindow):
-    HEIGHT = 23
+    X, Y = (0, 0)
+    WIDTH, HEIGHT = ('max', 23)
     BORDERED = True
 
     @classmethod
@@ -56,7 +57,8 @@ class MainWindow(CursedWindow):
 
 
 class BottomMessage(CursedWindow):
-    Y = 23
+    X, Y = (0, 23)
+    WIDTH, HEIGHT = ('max', 1)
     BORDERED = False
 
     @classmethod

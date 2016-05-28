@@ -6,10 +6,8 @@ app = CursedApp()
 
 
 class HeaderWindow(CursedWindow):
-    X = 0
-    Y = 0
-    WIDTH = 'max'
-    HEIGHT = 3
+    X, Y = (0, 0)
+    WIDTH, HEIGHT = ('max', 3)
     MENU = CursedMenu()
     MENU.add_menu('File', 'f')
     MENU.add_items(('Save response', 's', 'save'))
@@ -63,10 +61,8 @@ class HeaderWindow(CursedWindow):
 
 
 class DisplayWindow(CursedWindow):
-    X = 0
-    Y = 3
-    WIDTH = 'max'
-    HEIGHT = 'max'
+    X, Y = (0, 3)
+    WIDTH, HEIGHT = ('max', 'max')
     BORDERED = True
 
     @classmethod

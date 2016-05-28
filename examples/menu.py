@@ -4,8 +4,8 @@ app = CursedApp()
 
 
 class MainWindow(CursedWindow):
-    WIDTH = 100
-    HEIGHT = 23
+    X, Y = (0, 0)
+    WIDTH, HEIGHT = 'max', 23
 
     MENU = CursedMenu()
     MENU.add_menu('File', 'f')
@@ -50,8 +50,8 @@ class MainWindow(CursedWindow):
 
 
 class FooterWindow(CursedWindow):
-    HEIGHT = 1
-    Y = 23
+    X, Y = (0, 23)
+    WIDTH, HEIGHT = 'max', 1
 
     @classmethod
     def init(cls):
