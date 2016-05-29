@@ -15,6 +15,10 @@ from cursed.window import CursedWindowClass
 
 
 class Result(object):
+    '''
+    Result represents the object returned by `app.run()`, which may contain
+    exception information.
+    '''
 
     def __init__(self):
         self.exc_type, self.exc, self.tb = None, None, None
@@ -26,19 +30,34 @@ class Result(object):
         self.exc_type, self.exc, self.tb = thread.exc_info
 
     def unwrap(self):
+        '''
+        Unwraps the `Result`, raising an exception if one exists.
+        '''
         if self.exc:
             six.reraise(self.exc_type, self.exc, self.tb)
 
     def ok(self):
+        '''
+        Return True if no exception occurred.
+        '''
         return not bool(self.exc)
 
     def err(self):
+        '''
+        Returns the exception or None.
+        '''
         return self.exc if self.exc else None
 
     def interrupted(self):
+        '''
+        Returns True if the application was interrupted, like through Ctrl-C.
+        '''
         return self.exc_type is KeyboardInterrupt
 
     def print_exc(self):
+        '''
+        Prints the exception traceback.
+        '''
         if self.tb:
             traceback.print_tb(self.tb)
 
@@ -52,6 +71,10 @@ class Result(object):
 
 
 class CursedApp(object):
+    '''
+    The CursedApp is the main class which is used to track windows that are
+    created and finally run the application.
+    '''
 
     def __init__(self):
         self.scr = None
@@ -60,7 +83,7 @@ class CursedApp(object):
         self.windows = None
         self.running = True
 
-    def run_windows(self):
+    def _run_windows(self):
         CursedWindowClass.fix_windows(self.MAX_WIDTH, self.MAX_HEIGHT)
         self.windows = CursedWindowClass.WINDOWS
         self.active_window = None
@@ -69,7 +92,7 @@ class CursedApp(object):
             cw.THREAD = thread
             self.threads += [thread]
 
-    def input_loop(self):
+    def _input_loop(self):
         while self.running:
             for cw in self.windows:
                 if cw.THREAD.exception is not None:
@@ -90,6 +113,10 @@ class CursedApp(object):
                 cw.KEY_EVENTS.put(c)
 
     def run(self):
+        '''
+        Runs all the windows added to the application, and returns a `Result`
+        object.
+        '''
         result = Result()
         try:
             self.scr = curses.initscr()
@@ -101,8 +128,8 @@ class CursedApp(object):
             self.window = self.scr.subwin(0, 0)
             self.window.keypad(1)
             self.window.nodelay(1)
-            self.run_windows()
-            self.threads += [gevent.spawn(self.input_loop)]
+            self._run_windows()
+            self.threads += [gevent.spawn(self._input_loop)]
             gevent.joinall(self.threads)
             for thread in self.threads:
                 if thread.exception:

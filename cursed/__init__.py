@@ -1,6 +1,9 @@
-''' cursed
+'''
+cursed
 
-Simplified curses interface
+Simplified curses interface with concurrency, for quick and sane curses apps.
+Allows easy creation of windows and menus. Code for each window runs concurrently.
+
 '''
 from cursed.app import CursedApp
 from cursed.window import CursedWindow
