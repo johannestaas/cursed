@@ -49,6 +49,8 @@ Example::
 Release Notes
 -------------
 
+:0.1.8:
+    - added tons of documentation and examples
 :0.1.7:
     - Better CursedMenu API
 :0.1.6:
