@@ -1,23 +1,54 @@
-.. cursed documentation master file, created by
-   sphinx-quickstart on Sun May 29 01:31:23 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+cursed package
+==============
 
-Welcome to cursed's documentation!
-==================================
+Submodules
+----------
 
-Contents:
+cursed.app module
+-----------------
 
-.. toctree::
-   :maxdepth: 2
+.. automodule:: cursed.app
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-   cursed
+cursed.window module
+--------------------
+
+.. automodule:: cursed.window
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cursed.exceptions module
+--------------------
+
+.. automodule:: cursed.exceptions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cursed.meta module
+--------------------
+
+.. automodule:: cursed.meta
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cursed.menu module
+--------------------
+
+.. automodule:: cursed.menu
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
-Indices and tables
-==================
+Module contents
+---------------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+.. automodule:: cursed
+    :members:
+    :undoc-members:
+    :show-inheritance:
