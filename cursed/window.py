@@ -11,7 +11,7 @@ import gevent
 import six
 from cursed.exceptions import CursedSizeError, CursedCallbackError
 from cursed.meta import CursedWindowClass
-from cursed.menu import Menu
+from cursed.menu import _Menu as Menu
 
 
 @six.add_metaclass(CursedWindowClass)

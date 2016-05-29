@@ -18,13 +18,13 @@ class CursedMenu(object):
         title = title.strip()
         if not title:
             raise CursedMenuError('Menu must have a name.')
-        menu = Menu(title=title, key=key, items=[])
+        menu = _Menu(title=title, key=key, items=[])
         if not items:
             raise CursedMenuError('Menu must define items inside it.')
         menu.add_items(items)
 
 
-class OpenMenu(object):
+class _OpenMenu(object):
 
     def __init__(self, index=None, title=None, cb_map=None):
         self.index = index
@@ -32,7 +32,7 @@ class OpenMenu(object):
         self.cb_map = cb_map
 
 
-class MenuItem(object):
+class _MenuItem(object):
 
     def __init__(self, name=None, key=None, cb=None):
         self.name = name
@@ -45,7 +45,7 @@ class MenuItem(object):
         return self.name
 
 
-class Menu(object):
+class _Menu(object):
     ALL = []
     KEY_MAP = {}
     TITLE_MAP = {}
@@ -55,12 +55,12 @@ class Menu(object):
         self.key = key
         self.items = []
         self.item_map = {}
-        self.index = len(Menu.ALL)
+        self.index = len(_Menu.ALL)
         self.selected = None
-        Menu.ALL += [self]
-        Menu.TITLE_MAP[title] = self
+        _Menu.ALL += [self]
+        _Menu.TITLE_MAP[title] = self
         if key is not None:
-            Menu.KEY_MAP[key] = self
+            _Menu.KEY_MAP[key] = self
 
     @classmethod
     def clear_select(cls):
@@ -84,7 +84,7 @@ class Menu(object):
             name = name.strip()
             if not name:
                 raise CursedMenuError('Menu item must have a name.')
-            self.add_item(MenuItem(name=name, key=key, cb=cb))
+            self.add_item(_MenuItem(name=name, key=key, cb=cb))
 
     def get_cb(self, key):
         if key in self.item_map:
@@ -93,21 +93,21 @@ class Menu(object):
 
     @classmethod
     def get_menu_from_key(cls, key):
-        return Menu.KEY_MAP.get(key)
+        return _Menu.KEY_MAP.get(key)
 
     @classmethod
     def get_menu_at(cls, i):
-        if i >= len(Menu.ALL):
+        if i >= len(_Menu.ALL):
             return None
-        return Menu.ALL[i]
+        return _Menu.ALL[i]
 
     @classmethod
     def get_menu_from_title(cls, title):
-        return Menu.TITLE_MAP.get(title)
+        return _Menu.TITLE_MAP.get(title)
 
     @classmethod
     def size(cls):
-        return len(Menu.ALL)
+        return len(_Menu.ALL)
 
     def down(self):
         if self.selected is None:

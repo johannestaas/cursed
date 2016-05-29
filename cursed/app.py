@@ -74,9 +74,31 @@ class CursedApp(object):
     '''
     The CursedApp is the main class which is used to track windows that are
     created and finally run the application.
+
+    The CursedApp is initialized then run in the main function to build the
+    windows.
+
+    Example:
+    ::
+
+        from cursed import CursedApp, CursedWindow
+
+        app = CursedApp()
+
+        class MainWindow(CursedWindow):
+            X, Y = (0, 0)
+            WIDTH, HEIGHT = ('max', 'max')
+
+            ...
+
+        result = app.run()
+        result.unwrap()
     '''
 
     def __init__(self):
+        '''
+        Initializes the CursedApp. No parameters are required.
+        '''
         self.scr = None
         self.menu = None
         self.threads = []
@@ -116,6 +138,7 @@ class CursedApp(object):
         '''
         Runs all the windows added to the application, and returns a `Result`
         object.
+
         '''
         result = Result()
         try:
