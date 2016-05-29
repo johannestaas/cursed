@@ -5,12 +5,14 @@ app = CursedApp()
 
 
 class MainWindow(CursedWindow):
+    X, Y = (0, 0)
     WIDTH = 60
+    HEIGHT = 'max'
     BORDERED = True
 
     @classmethod
     def update(cls):
-        c = cls.getlkey()
+        c = cls.getkey()
         if c is None:
             return
         if c == 'q':
@@ -23,8 +25,9 @@ class MainWindow(CursedWindow):
 
 
 class SideWindow(CursedWindow):
+    X, Y = (60, 0)
     WIDTH = 20
-    X = 60
+    HEIGHT = 'max'
     BORDERED = True
 
     @classmethod
@@ -38,7 +41,7 @@ class SideWindow(CursedWindow):
 
     @classmethod
     def update(cls):
-        c = cls.getlkey()
+        c = cls.getkey()
         if c is None:
             return
         if c == 'q':

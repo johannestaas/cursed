@@ -28,6 +28,7 @@ class CursedCallbackError(RuntimeError):
 class CursedMenuError(RuntimeError):
     '''
     Raised when menus aren't initialized correctly.
-    Check the examples for proper creation of menus.
+    Check in the CursedMenu documentation or the example projects for examples
+    of proper creation of menus.
     '''
     pass
