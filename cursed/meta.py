@@ -11,6 +11,10 @@ BASE_CURSED_CLASSES = ('CursedWindowClass', 'CursedWindow', 'CursedMenu')
 
 
 class CursedWindowClass(type):
+    '''
+    The CursedWindow has this as a metaclass, to keep track of all classes
+    that inherit from it so that the app can instanciate the correct windows.
+    '''
 
     WINDOWS = []
 
@@ -38,7 +42,7 @@ class CursedWindowClass(type):
         return new
 
     @classmethod
-    def fix_windows(cls, maxw, maxh):
+    def _fix_windows(cls, maxw, maxh):
         '''
         Fixes all windows for which width or height is specified as 'max'.
         '''

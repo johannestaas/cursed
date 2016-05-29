@@ -106,7 +106,7 @@ class CursedApp(object):
         self.running = True
 
     def _run_windows(self):
-        CursedWindowClass.fix_windows(self.MAX_WIDTH, self.MAX_HEIGHT)
+        CursedWindowClass._fix_windows(self.MAX_WIDTH, self.MAX_HEIGHT)
         self.windows = CursedWindowClass.WINDOWS
         self.active_window = None
         for i, cw in enumerate(self.windows):
