@@ -7,6 +7,8 @@ Allows easy creation of windows and menus. Code for each window runs concurrentl
 
 Please see full documentation available here: http://pythonhosted.org/cursed/
 
+cursed was tested with Python 3.4 and 2.7, and depends on the Python package six for compatibility.
+
 Installation
 ------------
 
