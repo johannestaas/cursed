@@ -10,11 +10,28 @@ from cursed.exceptions import CursedMenuError
 
 
 class CursedMenu(object):
+    '''
+    The CursedMenu is the class which is used to initialize all the menus and
+    items.
+    '''
 
     def __init__(self):
         self.menus = []
 
     def add_menu(self, title, key=None, items=None):
+        '''
+        This creates a full menu with a title, an optional hotkey, and a list
+        of items inside the menu, with their name, hotkey and callback.
+
+        Example:
+        ::
+
+            MENU = CursedMenu('File', key='f', items=[
+                ('Save', 's', 'save_callback'),
+                ('Open', 'open_callback'),
+                ('Quit', 'q', 'quit'),
+            ])
+        '''
         title = title.strip()
         if not title:
             raise CursedMenuError('Menu must have a name.')
