@@ -49,6 +49,8 @@ Example::
 Release Notes
 -------------
 
+:0.1.7:
+    - Better CursedMenu API
 :0.1.6:
     - WIDTH or HEIGHT specified as 'max' will stretch to the full width or height of the terminal
 :0.1.5:
