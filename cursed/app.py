@@ -11,7 +11,8 @@ examples/menu.py example from the main repository, with extra comments to
 explain the various parts:
 
 ::
-	from cursed import CursedApp, CursedWindow, CursedMenu
+
+    from cursed import CursedApp, CursedWindow, CursedMenu
 
     # You instanciate the application through instanciating a CursedApp
     app = CursedApp()
@@ -108,8 +109,8 @@ explain the various parts:
         # This will reraise exceptions that were raised in windows.
         result.unwrap()
 
-    That's the essentials of it. Just remember to trigger('quit') to all your
-    windows if you want it to exit cleanly.
+That's the essentials of it. Just remember to trigger('quit') to all your
+windows if you want it to exit cleanly.
 '''
 
 import sys
