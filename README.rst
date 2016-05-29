@@ -5,6 +5,8 @@ Simplified curses interface with concurrency, for quick and sane curses apps.
 
 Allows easy creation of windows and menus. Code for each window runs concurrently.
 
+Please see full documentation available here: http://pythonhosted.org/cursed/
+
 Installation
 ------------
 
