@@ -48,6 +48,8 @@ Example::
         # Raises an exception if any thread ran into a different exception.
         result.unwrap()
 
+Many more examples are available in the root of the repository at examples/
+
 Release Notes
 -------------
 
