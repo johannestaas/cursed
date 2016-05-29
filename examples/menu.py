@@ -8,17 +8,15 @@ class MainWindow(CursedWindow):
     WIDTH, HEIGHT = 'max', 23
 
     MENU = CursedMenu()
-    MENU.add_menu('File', 'f')
-    MENU.add_items(
+    MENU.add_menu('File', key='f', items=[
         ('Save', 's', 'save'),
         ('Quit', 'q', 'quit'),
-    )
-    MENU.add_menu('Edit', 'e')
-    MENU.add_items(
+    ])
+    MENU.add_menu('Edit', key='e', items=[
         ('Copy', 'c', 'copy'),
         ('Paste', 'v', 'paste'),
         ('Delete', 'delete')
-    )
+    ])
 
     @classmethod
     def save(cls):

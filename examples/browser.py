@@ -9,11 +9,13 @@ class HeaderWindow(CursedWindow):
     X, Y = (0, 0)
     WIDTH, HEIGHT = ('max', 3)
     MENU = CursedMenu()
-    MENU.add_menu('File', 'f')
-    MENU.add_items(('Save response', 's', 'save'))
-    MENU.add_items(('Quit', 'q', 'quit'))
-    MENU.add_menu('Browse', 'b')
-    MENU.add_items(('Open URL', 'o', 'open_url'))
+    MENU.add_menu('File', key='f', items=[
+        ('Save response', 's', 'save'),
+        ('Quit', 'q', 'quit'),
+    ])
+    MENU.add_menu('Browse', key='b', items=[
+        ('Open URL', 'o', 'open_url'),
+    ])
 
     @classmethod
     def update(cls):

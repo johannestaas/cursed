@@ -14,29 +14,14 @@ class CursedMenu(object):
     def __init__(self):
         self.menus = []
 
-    def add_menu(self, title, key=None):
+    def add_menu(self, title, key=None, items=None):
         title = title.strip()
         if not title:
             raise CursedMenuError('Menu must have a name.')
-        self.menus += [Menu(title=title, key=key, items=[])]
-
-    def add_items(self, *args):
-        if not self.menus:
-            raise CursedMenuError('Must add_menu before adding items.')
-        menu = self.menus[-1]
-        for arg in args:
-            if len(arg) == 2:
-                name, cb = arg
-                key = None
-            elif len(arg) == 3:
-                name, key, cb = arg
-            else:
-                raise CursedMenuError('Format for menu item must be (Title, '
-                                      'key, function name)')
-            name = name.strip()
-            if not name:
-                raise CursedMenuError('Menu item must have a name.')
-            menu.add_item(MenuItem(name=name, key=key, cb=cb))
+        menu = Menu(title=title, key=key, items=[])
+        if not items:
+            raise CursedMenuError('Menu must define items inside it.')
+        menu.add_items(items)
 
 
 class OpenMenu(object):
@@ -85,6 +70,21 @@ class Menu(object):
     def add_item(self, menu_item):
         self.items += [menu_item]
         self.item_map[menu_item.key] = menu_item
+
+    def add_items(self, args):
+        for arg in args:
+            if len(arg) == 2:
+                name, cb = arg
+                key = None
+            elif len(arg) == 3:
+                name, key, cb = arg
+            else:
+                raise CursedMenuError('Format for menu item must be (Title, '
+                                      'key, function name)')
+            name = name.strip()
+            if not name:
+                raise CursedMenuError('Menu item must have a name.')
+            self.add_item(MenuItem(name=name, key=key, cb=cb))
 
     def get_cb(self, key):
         if key in self.item_map:
