@@ -4,6 +4,7 @@ app = CursedApp()
 
 
 class ScrollingWindow(CursedWindow):
+    WIDTH = 'max'
     HEIGHT = 23
     SCROLL = True
     i = 0
@@ -14,12 +15,14 @@ class ScrollingWindow(CursedWindow):
         if c == 27:
             cls.trigger('quit')
             return
-        cls.write(cls.i)
+        cls.addstr('{}'.format(cls.i))
+        cls.nextline()
         cls.i += 1
         cls.refresh()
 
 
 class FooterWindow(CursedWindow):
+    WIDTH = 'max'
     HEIGHT = 1
     Y = 23
 
