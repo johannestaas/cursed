@@ -52,7 +52,7 @@ Example::
                 # 'quit' must be triggered for each open window for the program to quit.
                 # Call cls.trigger('quit') to quit the window you're in, and to quit the other
                 # declared windows, call OtherWindow.trigger('quit') which will run in that
-                # windows thread, regardless of where it's called.
+                # window's thread, regardless of where it's called.
                 cls.trigger('quit')
 
     # To trigger app to start
