@@ -31,6 +31,8 @@ Example::
     app = CursedApp()
     
     # Derive from CursedWindow to declare curses windows to be created after app.run()
+    # It is required to declare X, Y, WIDTH, and HEIGHT for each window.
+    # You'll want to put the main looping code for each window thread in the `update` class function.
     class MainWindow(CursedWindow):
         # Coordinate for top-left of window.
         X, Y = (0, 0)
