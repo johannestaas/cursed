@@ -111,6 +111,40 @@ explain the various parts:
 
 That's the essentials of it. Just remember to trigger('quit') to all your
 windows if you want it to exit cleanly.
+
+New in 2.0
+----------
+
+Added pads!
+
+Now, you can specify a pad CursedWindow like so::
+
+    class MyPad(CursedWindow):
+        X, Y = 0, 0
+        WIDTH, HEIGHT = 40, 40
+
+        # set PAD to True
+        PAD = True
+
+        # the top left of the region to display
+        PAD_X, PAD_Y = 0, 0
+
+        # the virtual width and height, which you can scroll around to
+        PAD_WIDTH, PAD_HEIGHT = 500, 500
+
+        @classmethod
+        def update(cls):
+            ...
+            # get new coordinates for top left of region
+            ...
+            cls.PAD_X, cls.PAD_Y = top_left_x, top_left_y
+            ...
+            # will now display the correct region in a smaller 40x40 display
+            cls.refresh()
+
+This is useful for when you might want to do something like scroll through a
+map. See examples/pad.py for an example which scrolls through text using the
+arrow keys.
 '''
 
 import sys
