@@ -55,6 +55,9 @@ Many more examples are available in the root of the repository at examples/
 Release Notes
 -------------
 
+:0.1.9:
+    - fixed the ``write`` and ``getstr`` classmethods, since they called _fix_xy twice
+    - added info to menu example to explain ``addstr`` in update will overwrite menu display
 :0.1.8:
     - added tons of documentation and examples
 :0.1.7:
