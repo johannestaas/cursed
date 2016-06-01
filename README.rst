@@ -33,24 +33,45 @@ Example::
 
     from cursed import CursedApp, CursedWindow
 
+    # the main context of the curses application
     app = CursedApp()
     
+    # Derive from CursedWindow to declare curses windows to be created after app.run()
+    # It is required to declare X, Y, WIDTH, and HEIGHT for each window.
+    # You'll want to put the main looping code for each window thread in the `update` class function.
+    
     class MainWindow(CursedWindow):
-        WIDTH=80
+    
+        # Coordinate for top-left of window.
+        X, Y = (0, 0)
+        
+        # WIDTH and HEIGHT can be 'max' or integers.
+        WIDTH, HEIGHT = ('max', 'max')
+        
+        # Create a default border around the window.
         BORDERED = True
 
         @classmethod
         def update(cls):
             ''' update runs every tick '''
+            
             # Hello world printed at x,y of 0,0
             cls.addstr('Hello, world!', 0, 0)
+            
+            # Get character keycode of keypress, or None.
             if cls.getch() == 27:
                 # Escape was pressed. Quit.
+                # 'quit' must be triggered for each open window for the program to quit.
+                # Call cls.trigger('quit') to quit the window you're in, and to quit the other
+                # declared windows, call OtherWindow.trigger('quit') which will run in that
+                # window's thread, regardless of where it's called.
                 cls.trigger('quit')
 
+    # To trigger app to start
     result = app.run()
+    
+    # check if ctrl-C was pressed
     if result.interrupted():
-        # check if ctrl-C was pressed
         print('Quit!')
     else:
         # Raises an exception if any thread ran into a different exception.
