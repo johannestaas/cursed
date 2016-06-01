@@ -236,39 +236,30 @@ class CursedWindow(object):
         :param x: optional x value
         :param y: optional y value
         '''
-        x0, y0 = cls.getxy()
-        if x is not None:
-            x0 = x
-        if y is not None:
-            y0 = y
-        x, y = cls._fix_xy(x0, y0)
+        x, y = cls._fix_xy(x, y)
         for i, line in enumerate(msg.splitlines()):
             if y == cls.HEIGHT - 1:
                 break
             if len(line) + x >= cls.WIDTH:
                 line = line[:cls.WIDTH - x - 1]
-            cls.addstr(line, x, y)
+            cls.WINDOW.addstr(y, x, line)
             y += 1
 
     @classmethod
     def _fix_xy(cls, x, y):
-        y0, x0 = cls.WINDOW.getyx()
-        rawx, rawy = False, False
+        win_x, win_y = x, y
+        curs_y, curs_x = cls.WINDOW.getyx()
         if x is None:
-            x = x0
-            rawx = True
+            win_x = curs_x
         if y is None:
-            y = y0
-            rawy = True
-        if cls.BORDERED:
-            if not rawx:
-                x += 1
-            if not rawy:
-                y += 1
-        if cls.MENU:
-            if not rawy:
-                y += 1
-        return x, y
+            win_y = curs_y
+        if x is not None and cls.BORDERED:
+            win_x += 1
+        if y is not None and cls.BORDERED:
+            win_y += 1
+        if y is not None and cls.MENU:
+            win_y += 1
+        return win_x, win_y
 
     @classmethod
     def _fix_attr(cls, attr):
