@@ -1,5 +1,11 @@
-cursed
-======
+cursed!::
+
+      ______     __  __     ______     ______     ______     _____    
+     /\  ___\   /\ \/\ \   /\  == \   /\  ___\   /\  ___\   /\  __-.  
+     \ \ \____  \ \ \_\ \  \ \  __<   \ \___  \  \ \  __\   \ \ \/\ \ 
+      \ \_____\  \ \_____\  \ \_\ \_\  \/\_____\  \ \_____\  \ \____- 
+       \/_____/   \/_____/   \/_/ /_/   \/_____/   \/_____/   \/____/ 
+                                                                     
 
 Simplified curses interface with concurrency, for quick and sane curses apps.
 
@@ -55,6 +61,13 @@ Many more examples are available in the root of the repository at examples/
 Release Notes
 -------------
 
+:0.2.0:
+    - exposed gevent.sleep through a classmethod ``cls.sleep(seconds=0)``.
+      This allows users to fix issues with long running update functions causing other windows to
+      not respond.
+    - Added a CursedWindow PAD, like the curses pad. This can have a huge width and height greater than
+      the terminal width, but allow you to scroll around it. Useful for windows which need only display
+      a smaller rectange of a larger window, like a map that scrolls around with arrow keys.
 :0.1.9:
     - fixed the ``write`` and ``getstr`` classmethods, since they called _fix_xy twice
     - added info to menu example to explain ``addstr`` in update will overwrite menu display

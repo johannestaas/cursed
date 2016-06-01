@@ -33,7 +33,7 @@ class CursedWindow(object):
     _CW_SCREEN_SWAP_FUNCS = (
     )
     _CW_WINDOW_FUNCS = (
-        'refresh', 'clear', 'deleteln', 'erase', 'insertln', 'border',
+        'clear', 'deleteln', 'erase', 'insertln', 'border',
         'nodelay', 'notimeout', 'clearok', 'is_linetouched', 'is_wintouched',
     )
     _CW_SCREEN_FUNCS = (
@@ -459,6 +459,17 @@ class CursedWindow(object):
         cls.WINDOW.move(y, x)
 
     @classmethod
+    def pad_move(cls, x, y):
+        '''
+        Reorients where the top left of the PAD should be, so it knows which
+        region to display to the user.
+
+        :param x: the x element of the top left of the region to display
+        :param y: the y element of the top left of the region to display
+        '''
+        cls.PAD_X, cls.PAD_Y = x, y
+
+    @classmethod
     def _cw_setup_run(cls, app, window):
         cls.RUNNING = True
         cls.APP = app
@@ -469,7 +480,10 @@ class CursedWindow(object):
         if height < cls.HEIGHT:
             raise CursedSizeError('terminal height is %d and window height '
                                   'is %d' % (height, cls.HEIGHT))
-        cls.WINDOW = window.subwin(cls.HEIGHT, cls.WIDTH, cls.Y, cls.X)
+        if cls.PAD:
+            cls.WINDOW = curses.newpad(cls.PAD_HEIGHT, cls.PAD_WIDTH)
+        else:
+            cls.WINDOW = window.subwin(cls.HEIGHT, cls.WIDTH, cls.Y, cls.X)
         if cls.SCROLL:
             cls.WINDOW.scrollok(True)
             cls.WINDOW.idlok(1)
@@ -494,7 +508,24 @@ class CursedWindow(object):
             cls.WINDOW.border()
         if cls.MENU:
             cls._cw_menu_display()
-        cls.WINDOW.refresh()
+        cls.refresh()
+
+    @classmethod
+    def refresh(cls):
+        if cls.PAD:
+            # First two arguments the top left of the pad region to be displayed
+            # Next four arguments represent the minrow, mincol, maxrow, maxcol
+            # which are the top left on the screen and bottom right.
+            cls.WINDOW.refresh(
+                # Which location on the pad we scrolled to
+                cls.PAD_Y, cls.PAD_X,
+                # The top left of the pad where it is on the screen
+                cls.Y, cls.X,
+                # The bottom right of the pad where it is on the screen
+                cls.Y + cls.HEIGHT - 1, cls.X + cls.WIDTH - 1
+            )
+        else:
+            cls.WINDOW.refresh()
 
     @classmethod
     def openmenu(cls):

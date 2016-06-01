@@ -6,6 +6,22 @@ Base exceptions used by cursed.
 '''
 
 
+class CursedWindowError(ValueError):
+    '''
+    Raised when you screw up with the initial CursedWindow class variables,
+    like not setting WIDTH or HEIGHT.
+    '''
+    pass
+
+
+class CursedPadError(ValueError):
+    '''
+    Raised when you screw up setting up a PAD type CursedWindow, either by not
+    specifying the PAD_WIDTH or PAD_HEIGHT.
+    '''
+    pass
+
+
 class CursedSizeError(RuntimeError):
     '''
     Raised when a terminal size issue occurs, such as the menu not fitting in
