@@ -314,14 +314,9 @@ class CursedWindow(object):
         :param prompt: message to prompt user with, example: "Name: "
         :return: the string the user input
         '''
-        x0, y0 = cls.getxy()
-        if x is not None:
-            x0 = x
-        if y is not None:
-            y0 = y
-        x, y = cls._fix_xy(x0, y0)
+        x, y = cls._fix_xy(x, y)
         if prompt is not None:
-            cls.addstr(prompt, x0, y0)
+            cls.WINDOW.addstr(y, x, prompt)
             x += len(prompt)
         curses.echo()
         s = cls.WINDOW.getstr(y, x)
