@@ -40,6 +40,26 @@ class CursedWindow(object):
     )
 
     @classmethod
+    def sleep(cls, seconds=0):
+        '''
+        Tell the CursedWindow's greenlet to sleep for seconds.
+        This should be used to allow other CursedWindow's greenlets to execute,
+        especially if you have long running code in your ``update`` classmethod.
+
+        This is purely a restriction imposed by gevent, the concurrency library
+        used for cursed. It is not truly parallel, so one long running greenlet
+        can lock up execution of other windows. Calling cls.sleep() even with
+        zero seconds (default) will allow other greenlets to start execution
+        again.
+
+        There is no benefit to calling sleep with a number other than zero. Zero
+        will allow other greenlets to take over just fine.
+
+        :param seconds: seconds to sleep. default zero is fine.
+        '''
+        return gevent.sleep(seconds)
+
+    @classmethod
     def getch(cls):
         '''
         Get the integer value for the keypress, such as 27 for escape.
