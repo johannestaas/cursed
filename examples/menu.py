@@ -20,28 +20,33 @@ class MainWindow(CursedWindow):
 
     @classmethod
     def save(cls):
-        cls.addstr('File->Save', 5, 5)
+        cls.addstr('File->Save', 0, 7)
 
     @classmethod
     def quit(cls):
-        cls.addstr('Quitting', 5, 5)
+        cls.addstr('Quitting', 0, 7)
 
     @classmethod
     def copy(cls):
-        cls.addstr('edit->copy', 5, 5)
+        cls.addstr('edit->copy', 0, 7)
 
     @classmethod
     def paste(cls):
-        cls.addstr('edit->paste', 5, 5)
+        cls.addstr('edit->paste', 0, 7)
 
     @classmethod
     def delete(cls):
-        cls.addstr('edit->delete', 5, 5)
+        cls.addstr('edit->delete', 0, 7)
 
     @classmethod
     def update(cls):
         cls.addstr('x=10, y=12', 10, 12)
         # Press spacebar to open menu
+        cls.addstr('Constantly updating with addstr ', 2, 2)
+        cls.nextline()
+        cls.addstr('overwrites the menu.', 2, 3)
+        cls.addstr('The "Edit" menu should have "Delete"', 2, 4)
+        cls.addstr('as the third menu item.', 2, 5)
         k = cls.getch()
         if k == 32:
             cls.openmenu()
