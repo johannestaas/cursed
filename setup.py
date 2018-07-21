@@ -11,7 +11,7 @@ def read(fname):
 
 setup(
     name="cursed",
-    version="0.2.0",
+    version="0.2.1",
     description="Simplified curses",
     author="Johan Nestaas",
     author_email="johannestaas@gmail.com",
